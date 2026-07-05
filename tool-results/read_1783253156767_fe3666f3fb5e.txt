@@ -1,0 +1,558 @@
+     1→#!/usr/bin/env python3
+     2→"""BABIRYE v10.0.0 Titanium Ultra — Part 1: Tool Definitions & Helpers"""
+     3→import json, sys
+     4→
+     5→# ─── NEW OFFENSIVE TOOLS (50) ─────────────────────────────────────────────
+     6→NEW_OFFENSIVE = [
+     7→    ("metasploit","metasploitframework/metasploit-framework","Metasploit penetration framework"),
+     8→    ("nmap","instrumentisto/nmap","Nmap network scanner"),
+     9→    ("nikto","sstc/nikto","Nikto web server scanner"),
+    10→    ("sqlmap","sqlmapproject/sqlmap","SQLMap SQL injection"),
+    11→    ("hydra","haam3r/hydra","Hydra password cracker"),
+    12→    ("john","openwall/john","John the Ripper cracker"),
+    13→    ("aircrack-ng","aircrackng/aircrack-ng","Aircrack-ng WiFi audit"),
+    14→    ("wifite","wifite/wifite","Wifite WiFi auditor"),
+    15→    ("responder","python:3.11-slim","Responder LLMNR poisoner"),
+    16→    ("mimikatz","gentilwiki/mimikatz","Mimikatz credential extraction"),
+    17→    ("bloodhound","bloodhoundce/bloodhound","BloodHound AD analysis"),
+    18→    ("crackmapexec","python:3.11-slim","CrackMapExec post-exploitation"),
+    19→    ("ligolo-ng","nicocha30/ligolo-ng","Ligolo-ng tunneling"),
+    20→    ("chisel","jpillora/chisel","Chisel HTTP tunnel"),
+    21→    ("dnscat2","python:3.11-slim","DNSCat2 DNS tunnel"),
+    22→    ("nishang","python:3.11-slim","Nishang offensive PowerShell"),
+    23→    ("inveigh","python:3.11-slim","Inveigh AD MITM"),
+    24→    ("bettercap","bettercap/bettercap","BetterCAP MITM suite"),
+    25→    ("ettercap","ettercap/ettercap","Ettercap MITM"),
+    26→    ("tshark","wireshark/wireshark","TShark protocol analyzer"),
+    27→    ("impacket","secureideas/impacket","Impacket protocol libs"),
+    28→    ("rubeus","python:3.11-slim","Rubeus Kerberos tool"),
+    29→    ("gobuster","python:3.11-slim","Gobuster dir buster"),
+    30→    ("feroxbuster","epi052/feroxbuster","Feroxbuster content discovery"),
+    31→    ("wfuzz","ufuzz/wfuzz","WFuzz fuzzer"),
+    32→    ("arjun","s0md3v/arjun","Arjun param discovery"),
+    33→    ("subfinder","projectdiscovery/subfinder","Subfinder subdomain enum"),
+    34→    ("amass","ffuf/amass","Amass surface mapper"),
+    35→    ("httpx-toolkit","projectdiscovery/httpx","HTTPX HTTP probe"),
+    36→    ("nuclei","projectdiscovery/nuclei","Nuclei vuln scanner"),
+    37→    ("auto-recon","python:3.11-slim","Auto-Recon automation"),
+    38→    ("linpeas","python:3.11-slim","LinPEAS Linux privesc"),
+    39→    ("winpeas","python:3.11-slim","WinPEAS Windows privesc"),
+    40→    ("linux-exploit-suggester","python:3.11-slim","Linux exploit suggester"),
+    41→    ("keeppwn","python:3.11-slim","KeePwn KeePass attacks"),
+    42→    ("laudanum","python:3.11-slim","Laudanum web payloads"),
+    43→    ("phpsploit","phpsploit/phpsploit","PHPsploit post-exploitation"),
+    44→    ("commix","commixproject/commix","Commix command injection"),
+    45→    ("xsstrike","python:3.11-slim","XSStrike XSS detector"),
+    46→    ("tplmap","epinna/tplmap","Tplmap SSTI exploit"),
+    47→    ("whatweb","python:3.11-slim","WhatWeb web scanner"),
+    48→    ("wpscan","wpscanteam/wpscan","WPScan WordPress scanner"),
+    49→    ("joomscan","python:3.11-slim","Joomscan Joomla scanner"),
+    50→    ("droopescan","droopescan/droopescan","Droopescan CMS scanner"),
+    51→    ("recon-ng","lanmaster53/recon-ng","Recon-ng OSINT framework"),
+    52→    ("spiderfoot","spiderfoot/spiderfoot","SpiderFoot OSINT"),
+    53→    ("theharvester","laramies/theharvester","theHarvester email harvest"),
+    54→    ("maltego","paterva/maltego","Maltego link analysis"),
+    55→    ("fierce","python:3.11-slim","Fierce DNS recon"),
+    56→]
+    57→
+    58→# ─── DEFENSIVE TOOLS (100) ───────────────────────────────────────────────
+    59→DEFENSIVE = [
+    60→    ("snort","ciscosecurity/snort","Snort IDS/IPS"),
+    61→    ("suricata","jasonish/suricata","Suricata IDS/IPS"),
+    62→    ("zeek","zeek/zeek","Zeek network analysis"),
+    63→    ("wazuh-server","wazuh/wazuh","Wazuh SIEM/XDR"),
+    64→    ("ossec-server","ossec/ossec-hids","OSSEC HIDS"),
+    65→    ("fail2ban","fail2ban/fail2ban","Fail2Ban intrusion prevention"),
+    66→    ("crowdsec","crowdsecurity/crowdsec","CrowdSec collaborative IPS"),
+    67→    ("securityonion","securityonion/sostatus","Security Onion threat hunting"),
+    68→    ("moloch","molochar/molochar","Moloch packet capture"),
+    69→    ("arkime","arkime/arkime","Arkime packet analysis"),
+    70→    ("sagan","saganrulez/sagan","Sagan log analysis"),
+    71→    ("greenbone","greenbone/greenbone-vulnerability-manager","Greenbone OpenVAS"),
+    72→    ("openvas-scanner","greenbone/openvas-scanner","OpenVAS Scanner"),
+    73→    ("ntopng","ntop/ntopng","ntopng traffic monitor"),
+    74→    ("velociraptor","velocidex/velociraptor","Velociraptor endpoint vis"),
+    75→    ("graylog","graylog/graylog","Graylog log management"),
+    76→    ("elk-stack","elasticsearch:8.12.0","ELK Stack SIEM"),
+    77→    ("splunk-free","splunk/splunk","Splunk SIEM"),
+    78→    ("alerta","alerta/alerta","Alerta alert management"),
+    79→    ("canarytokens","thinkst/canarytokens","CanaryTokens decoys"),
+    80→    ("honeytrap","honeytrap/honeytrap","Honeytrap honeypot"),
+    81→    ("cowrie","cowrie/cowrie","Cowrie SSH honeypot"),
+    82→    ("dionaea","dionaea/dionaea","Dionaea malware honeypot"),
+    83→    ("clamav","clamav/clamav","ClamAV antivirus"),
+    84→    ("rkhunter","rkhunter/rkhunter","RKHunter rootkit detector"),
+    85→    ("chkrootkit","chkrootkit/chkrootkit","ChkRootkit detector"),
+    86→    ("lynis","cisofy/lynis","Lynis security audit"),
+    87→    ("osquery","osquery/osquery","Osquery OS instrumentation"),
+    88→    ("sysmon","florianbezdeka/sysmon","Sysmon system monitor"),
+    89→    ("falco","falcosecurity/falco","Falco runtime security"),
+    90→    ("auditd","python:3.11-slim","Auditd Linux audit"),
+    91→    ("aide","aide/aide","AIDE file integrity"),
+    92→    ("tripwire","tripwire/tripwire","Tripwire integrity"),
+    93→    ("samhain","samhain/samhain","Samhain HIDS"),
+    94→    ("yara","virustotal/yara","YARA malware patterns"),
+    95→    ("sigma","sigmahq/sigma","Sigma log rules"),
+    96→    ("stix-validator","oasis-tcs/stix-validator","STIX threat format"),
+    97→    ("mitre-attack","mitre/attack-navigator","MITRE ATT&CK Navigator"),
+    98→    ("opencti","opencti/opencti","OpenCTI threat intel"),
+    99→    ("misp","misp/misp","MISP threat sharing"),
+   100→    ("crits","crits/crits","CRITs threat intel"),
+   101→    ("vulnwhisperer","vulnwhisperer/vulnwhisperer","VulnWhisperer aggregator"),
+   102→    ("wazuh-agent","wazuh/wazuh-agent","Wazuh Agent"),
+   103→    ("ossec-agent","ossec/ossec-agent","OSSEC Agent"),
+   104→    ("grr","google/grr","GRR remote forensics"),
+   105→    ("osdvm","osdvm/osdvm","OSDVM security viz"),
+   106→    ("modsecurity","owasp/modsecurity-crs","ModSecurity WAF"),
+   107→    ("coraza-waf","corazawaf/coraza","Coraza WAF"),
+   108→    ("openresty","openresty/openresty","OpenResty Nginx WAF"),
+   109→    ("oauth2-proxy","oauth2-proxy/oauth2-proxy","OAuth2 Proxy"),
+   110→    ("keycloak","keycloak/keycloak","Keycloak identity mgmt"),
+   111→    ("dex-idp","dexidp/dex","Dex OIDC provider"),
+   112→    ("pomerium","pomerium/pomerium","Pomerium zero-trust"),
+   113→    ("traefik","traefik/traefik","Traefik edge router"),
+   114→    ("envoy","envoyproxy/envoy","Envoy service mesh"),
+   115→    ("vault","hashicorp/vault","Vault secrets mgmt"),
+   116→    ("consul-template","hashicorp/consul-template","Consul Template"),
+   117→    ("cert-manager","jetstack/cert-manager","cert-manager TLS"),
+   118→    ("step-ca","smallstep/step-ca","Step CA certificate auth"),
+   119→    ("spire","spiffe/spire","SPIRE workload identity"),
+   120→    ("opa","openpolicyagent/opa","OPA policy engine"),
+   121→    ("kyverno","kyverno/kyverno","Kyverno K8s policy"),
+   122→    ("trivy","aquasecurity/trivy","Trivy vuln scanner"),
+   123→    ("checkov","bridgecrewio/checkov","Checkov IaC scan"),
+   124→    ("tfsec","aquasecurity/tfsec","tfsec Terraform sec"),
+   125→    ("kubesec","controlplane/kubesec","Kubesec K8s security"),
+   126→    ("kube-bench","aquasecurity/kube-bench","kube-bench CIS"),
+   127→    ("kube-hunter","aquasecurity/kube-hunter","kube-hunter pentest"),
+   128→    ("dockle","goodwithtech/dockle","Dockle container linter"),
+   129→    ("clair","quay/clair","Clair container vuln"),
+   130→    ("grype","anchore/grype","Grype vuln matcher"),
+   131→    ("duo-auth","duosecurity/duoauthproxy","Duo MFA proxy"),
+   132→    ("privacyidea","privacyidea/privacyidea","PrivacyIDEA 2FA"),
+   133→    ("authelia","authelia/authelia","Authelia SSO 2FA"),
+   134→    ("kanidm","kanidm/kanidm","Kanidm identity"),
+   135→    ("lldap","lldap/lldap","LLDAP lightweight LDAP"),
+   136→    ("fusionauth","fusionauth/fusionauth","FusionAuth user mgmt"),
+   137→    ("authentik","goauthentik/authentik","Authentik identity"),
+   138→    ("supertokens","supertokens/supertokens-core","SuperTokens auth"),
+   139→    ("logto","logto-io/logto","Logto auth infra"),
+   140→    ("minio","minio/minio","MinIO encrypted S3"),
+   141→    ("restic","restic/restic","Restic encrypted backup"),
+   142→    ("borgbackup","borgbackup/borgbackup","Borg dedup backup"),
+   143→    ("sops","mozilla/sops","SOPS secrets encrypt"),
+   144→    ("age-encryption","str4d/age","age file encryption"),
+   145→    ("gpg","str4d/gpg","GPG encryption signing"),
+   146→    ("wireguard","linuxserver/wireguard","WireGuard VPN"),
+   147→    ("tailscale","tailscale/tailscale","Tailscale mesh VPN"),
+   148→    ("nebula","nebula-os/nebula","Nebula overlay network"),
+   149→    ("headscale","headscale/headscale","Headscale Tailscale"),
+   150→    ("firezone","firezone/firezone","Firezone WireGuard"),
+   151→    ("cloudflared","cloudflare/cloudflared","Cloudflare Tunnel"),
+   152→    ("pihole","pihole/pihole","Pi-hole DNS block"),
+   153→    ("adguard-home","adguard/adguard-home","AdGuard DNS filter"),
+   154→]
+   155→
+   156→# ─── MICRO DEFENSIVE TOOLS (150) ─────────────────────────────────────────
+   157→MICRO = [
+   158→    ("html-sanitizer","python:3.11-slim","HTML sanitizer"),
+   159→    ("sql-sanitizer","python:3.11-slim","SQL input sanitizer"),
+   160→    ("xss-filter","python:3.11-slim","XSS payload filter"),
+   161→    ("cmd-injection-guard","python:3.11-slim","Command injection guard"),
+   162→    ("path-traversal-guard","python:3.11-slim","Path traversal prevention"),
+   163→    ("ldap-injection-guard","python:3.11-slim","LDAP injection guard"),
+   164→    ("xml-sanitizer","python:3.11-slim","XXE XML sanitizer"),
+   165→    ("header-injection-guard","python:3.11-slim","HTTP header guard"),
+   166→    ("crlf-injection-guard","python:3.11-slim","CRLF injection guard"),
+   167→    ("ssti-guard","python:3.11-slim","SSTI detection guard"),
+   168→    ("jwt-validator","python:3.11-slim","JWT validation"),
+   169→    ("csp-enforcer","python:3.11-slim","CSP enforcer"),
+   170→    ("cors-guard","python:3.11-slim","CORS policy enforcer"),
+   171→    ("rate-limiter","python:3.11-slim","API rate limiter"),
+   172→    ("brute-force-guard","python:3.11-slim","Brute force prevention"),
+   173→    ("csrf-guard","python:3.11-slim","CSRF token validator"),
+   174→    ("idempotency-guard","python:3.11-slim","Idempotency enforcer"),
+   175→    ("payload-size-guard","python:3.11-slim","Request size limiter"),
+   176→    ("schema-validator","python:3.11-slim","JSON schema validator"),
+   177→    ("regex-validator","python:3.11-slim","Regex input validator"),
+   178→    ("file-hash-monitor","python:3.11-slim","File hash monitor"),
+   179→    ("config-drift-detector","python:3.11-slim","Config drift detection"),
+   180→    ("process-monitor","python:3.11-slim","Process anomaly monitor"),
+   181→    ("network-flow-monitor","python:3.11-slim","Network flow detector"),
+   182→    ("dns-monitor","python:3.11-slim","DNS query monitor"),
+   183→    ("certificate-monitor","python:3.11-slim","TLS cert expiry monitor"),
+   184→    ("user-activity-monitor","python:3.11-slim","User activity auditor"),
+   185→    ("priv-esc-monitor","python:3.11-slim","Privilege esc detector"),
+   186→    ("login-anomaly-detector","python:3.11-slim","Login anomaly detection"),
+   187→    ("file-access-monitor","python:3.11-slim","Sensitive file monitor"),
+   188→    ("registry-monitor","python:3.11-slim","Registry change monitor"),
+   189→    ("service-monitor","python:3.11-slim","Service state monitor"),
+   190→    ("port-monitor","python:3.11-slim","Port change monitor"),
+   191→    ("cron-monitor","python:3.11-slim","Cron job integrity monitor"),
+   192→    ("kernel-module-monitor","python:3.11-slim","Kernel module tracker"),
+   193→    ("docker-event-monitor","python:3.11-slim","Docker event auditor"),
+   194→    ("api-call-auditor","python:3.11-slim","API call audit logger"),
+   195→    ("session-monitor","python:3.11-slim","Session anomaly detector"),
+   196→    ("resource-quota-guard","python:3.11-slim","Resource quota enforcer"),
+   197→    ("temp-file-cleaner","python:3.11-slim","Temp file cleaner"),
+   198→    ("key-rotator","python:3.11-slim","Key rotation engine"),
+   199→    ("tls-config-checker","python:3.11-slim","TLS config analyzer"),
+   200→    ("secret-scanner","python:3.11-slim","Secret credential scanner"),
+   201→    ("env-validator","python:3.11-slim","Env var security check"),
+   202→    ("password-policy-enforcer","python:3.11-slim","Password policy engine"),
+   203→    ("token-revoker","python:3.11-slim","Token revocation service"),
+   204→    ("cert-pinner","python:3.11-slim","Cert pinning enforcer"),
+   205→    ("hmac-timestamp-guard","python:3.11-slim","HMAC timestamp validator"),
+   206→    ("nonce-tracker","python:3.11-slim","Nonce replay prevention"),
+   207→    ("encryption-at-rest-check","python:3.11-slim","Encryption-at-rest verify"),
+   208→    ("key-derivation-checker","python:3.11-slim","Key derivation checker"),
+   209→    ("randomness-quality-checker","python:3.11-slim","CSPRNG auditor"),
+   210→    ("hash-algorithm-checker","python:3.11-slim","Hash deprecation check"),
+   211→    ("pem-parser","python:3.11-slim","PEM cert parser"),
+   212→    ("ocsp-responder","python:3.11-slim","OCSP stapling responder"),
+   213→    ("crl-checker","python:3.11-slim","CRL checker"),
+   214→    ("key-usage-enforcer","python:3.11-slim","Key usage enforcer"),
+   215→    ("vault-health-check","python:3.11-slim","Vault seal checker"),
+   216→    ("crypto-benchmark","python:3.11-slim","Crypto benchmark"),
+   217→    ("seed-phrase-validator","python:3.11-slim","Seed phrase validator"),
+   218→    ("port-scan-detector","python:3.11-slim","Port scan detection"),
+   219→    ("syn-flood-guard","python:3.11-slim","SYN flood mitigation"),
+   220→    ("arp-spoof-detector","python:3.11-slim","ARP spoof detector"),
+   221→    ("dns-hijack-guard","python:3.11-slim","DNS hijack prevention"),
+   222→    ("rogue-ap-detector","python:3.11-slim","Rogue AP detector"),
+   223→    ("mac-flood-guard","python:3.11-slim","MAC flood prevention"),
+   224→    ("vlan-hopping-guard","python:3.11-slim","VLAN hopping prevention"),
+   225→    ("icmp-tunnel-detector","python:3.11-slim","ICMP tunnel detection"),
+   226→    ("dns-tunnel-detector","python:3.11-slim","DNS tunnel detection"),
+   227→    ("http-tunnel-detector","python:3.11-slim","HTTP tunnel detection"),
+   228→    ("ssh-brute-guard","python:3.11-slim","SSH brute force guard"),
+   229→    ("rdp-guard","python:3.11-slim","RDP attack prevention"),
+   230→    ("smb-guard","python:3.11-slim","SMB exploitation guard"),
+   231→    ("ftp-guard","python:3.11-slim","FTP attack prevention"),
+   232→    ("smtp-guard","python:3.11-slim","SMTP abuse prevention"),
+   233→    ("ip-reputation-checker","python:3.11-slim","IP reputation checker"),
+   234→    ("geoip-guard","python:3.11-slim","GeoIP access controller"),
+   235→    ("tor-exit-guard","python:3.11-slim","Tor exit node blocker"),
+   236→    ("vpn-detector","python:3.11-slim","VPN proxy detector"),
+   237→    ("bot-detection","python:3.11-slim","Bot crawler detector"),
+   238→    ("container-escape-guard","python:3.11-slim","Container escape prevent"),
+   239→    ("privileged-container-detector","python:3.11-slim","Priv container detector"),
+   240→    ("image-vuln-scanner-micro","python:3.11-slim","Image vuln micro-scanner"),
+   241→    ("secret-in-image-scanner","python:3.11-slim","Secret-in-image detector"),
+   242→    ("network-policy-validator","python:3.11-slim","K8s network policy check"),
+   243→    ("rbac-auditor","python:3.11-slim","RBAC permission auditor"),
+   244→    ("pod-security-checker","python:3.11-slim","Pod security checker"),
+   245→    ("service-account-auditor","python:3.11-slim","Service account auditor"),
+   246→    ("ingress-scanner","python:3.11-slim","Ingress config scanner"),
+   247→    ("configmap-secret-checker","python:3.11-slim","ConfigMap secret scanner"),
+   248→    ("cloudtrail-monitor","python:3.11-slim","CloudTrail log monitor"),
+   249→    ("s3-bucket-scanner","python:3.11-slim","S3 bucket scanner"),
+   250→    ("iam-auditor","python:3.11-slim","IAM policy auditor"),
+   251→    ("sg-auditor","python:3.11-slim","Security group auditor"),
+   252→    ("vpc-flow-analyzer","python:3.11-slim","VPC flow log analyzer"),
+   253→    ("ec2-metadata-guard","python:3.11-slim","EC2 metadata guard"),
+   254→    ("lambda-permission-checker","python:3.11-slim","Lambda permission check"),
+   255→    ("secrets-manager-auditor","python:3.11-slim","Secrets mgr auditor"),
+   256→    ("kms-key-rotator","python:3.11-slim","KMS key rotation check"),
+   257→    ("cloud-config-auditor","python:3.11-slim","Cloud config auditor"),
+   258→    ("self-injection-guard","python:3.11-slim","Self-prompt injection block"),
+   259→    ("self-exfiltration-guard","python:3.11-slim","Self-data exfil block"),
+   260→    ("self-privilege-guard","python:3.11-slim","Self-priv esc block"),
+   261→    ("self-modification-guard","python:3.11-slim","Self-code modify prevent"),
+   262→    ("self-comm-guard","python:3.11-slim","Self-comm block"),
+   263→    ("self-dos-guard","python:3.11-slim","Self-DDoS prevention"),
+   264→    ("self-resource-guard","python:3.11-slim","Self-resource exhaust block"),
+   265→    ("self-memory-guard","python:3.11-slim","Self-memory corruption detect"),
+   266→    ("self-config-guard","python:3.11-slim","Self-config tamper prevent"),
+   267→    ("self-credential-guard","python:3.11-slim","Self-credential theft block"),
+   268→    ("self-deserialization-guard","python:3.11-slim","Unsafe deser block"),
+   269→    ("self-path-guard","python:3.11-slim","Self-path traversal prevent"),
+   270→    ("self-race-guard","python:3.11-slim","Self-race condition prevent"),
+   271→    ("self-timebomb-guard","python:3.11-slim","Logic bomb detection"),
+   272→    ("self-backdoor-guard","python:3.11-slim","Backdoor plant prevent"),
+   273→    ("self-crypto-guard","python:3.11-slim","Crypto downgrade prevent"),
+   274→    ("self-log-guard","python:3.11-slim","Self-log injection prevent"),
+   275→    ("self-depconfusion-guard","python:3.11-slim","Dependency confusion prevent"),
+   276→    ("self-prototype-guard","python:3.11-slim","Prototype pollution prevent"),
+   277→    ("self-replay-guard","python:3.11-slim","Self-replay attack prevent"),
+   278→    ("self-supply-chain-guard","python:3.11-slim","Supply chain verify"),
+   279→    ("self-encoding-bypass-guard","python:3.11-slim","Encoding bypass detect"),
+   280→    ("self-unicode-bypass-guard","python:3.11-slim","Unicode norm attack guard"),
+   281→    ("self-model-extraction-guard","python:3.11-slim","Model extraction prevent"),
+   282→    ("self-adversarial-guard","python:3.11-slim","Adversarial input resilience"),
+   283→    ("behavioral-baseline","python:3.11-slim","Behavioral baseline profiler"),
+   284→    ("anomaly-scoring-engine","python:3.11-slim","Multi-signal anomaly score"),
+   285→    ("threat-intel-enricher","python:3.11-slim","Threat intel enrichment"),
+   286→    ("ioc-matcher","python:3.11-slim","IOC matcher"),
+   287→    ("yara-rules-engine","python:3.11-slim","YARA rules engine"),
+   288→    ("sigma-rules-engine","python:3.11-slim","Sigma rules engine"),
+   289→    ("mitre-mapping-engine","python:3.11-slim","MITRE ATT&CK mapping"),
+   290→    ("kill-chain-analyzer","python:3.11-slim","Kill chain analyzer"),
+   291→    ("diamond-model-analyzer","python:3.11-slim","Diamond model analyzer"),
+   292→    ("attack-graph-generator","python:3.11-slim","Attack graph generator"),
+   293→    ("risk-scoring-engine","python:3.11-slim","Risk scoring engine"),
+   294→    ("vuln-prioritizer","python:3.11-slim","CVSS vuln prioritizer"),
+   295→    ("patch-priority-engine","python:3.11-slim","Patch priority engine"),
+   296→    ("compliance-checker","python:3.11-slim","CIS NIST compliance check"),
+   297→    ("incident-timer","python:3.11-slim","Incident SLA timer"),
+   298→    ("evidence-chain-validator","python:3.11-slim","Evidence chain validator"),
+   299→    ("timeline-reconstructor","python:3.11-slim","Timeline reconstructor"),
+   300→    ("malware-triage","python:3.11-slim","Malware triage classifier"),
+   301→    ("phishing-detector","python:3.11-slim","Phishing URL detector"),
+   302→    ("deepfake-detector","python:3.11-slim","Deepfake media detector"),
+   303→    ("social-eng-guard","python:3.11-slim","Social eng pattern detect"),
+   304→    ("insider-threat-detector","python:3.11-slim","Insider threat detector"),
+   305→    ("data-exfil-detector","python:3.11-slim","Data exfil detector"),
+   306→    ("lateral-movement-detector","python:3.11-slim","Lateral movement detect"),
+   307→    ("persistence-detector","python:3.11-slim","Persistence mechanism detect"),
+   308→]
+   309→
+   310→# ─── SENSORS ORCHESTRATOR (from user input, HAL→BABIRYE fixed) ──────────
+   311→SENSORS_ORCH = r'''
+   312→        import json, asyncio, math, random
+   313→        from fastapi import FastAPI, WebSocket
+   314→        from pydantic import BaseModel
+   315→        import uvicorn
+   316→
+   317→        app = FastAPI()
+   318→
+   319→        RADAR_TYPES = {
+   320→            'doppler': {'range_km': 50, 'accuracy_m': 10, 'update_hz': 10, 'modes': ['search', 'track', 'weather']},
+   321→            'phased_array': {'range_km': 200, 'accuracy_m': 1, 'update_hz': 20, 'modes': ['search', 'track', 'fire_control']},
+   322→            'passive': {'range_km': 300, 'accuracy_m': 50, 'update_hz': 1, 'modes': ['search', 'electronic_intelligence']},
+   323→            'weather': {'range_km': 100, 'accuracy_m': 100, 'update_hz': 1, 'modes': ['precipitation', 'wind']},
+   324→            'ground_penetrating': {'range_m': 10, 'accuracy_m': 0.1, 'update_hz': 5, 'modes': ['buried_object']},
+   325→            'over_the_horizon': {'range_km': 1000, 'accuracy_m': 1000, 'update_hz': 0.1, 'modes': ['early_warning']},
+   326→            'synthetic_aperture': {'range_km': 50, 'accuracy_m': 0.1, 'update_hz': 0.01, 'modes': ['imaging']},
+   327→            'continuous_wave': {'range_km': 20, 'accuracy_m': 5, 'update_hz': 50, 'modes': ['speed']},
+   328→        }
+   329→        SONAR_TYPES = {
+   330→            'active': {'range_km': 10, 'accuracy_m': 1, 'frequency_hz': 3000, 'modes': ['search', 'track']},
+   331→            'passive': {'range_km': 30, 'accuracy_m': 10, 'frequency_hz': 100, 'modes': ['listen', 'classification']},
+   332→            'side_scan': {'range_km': 1, 'accuracy_m': 0.1, 'frequency_hz': 100000, 'modes': ['imaging']},
+   333→            'synthetic_aperture': {'range_km': 5, 'accuracy_m': 0.01, 'frequency_hz': 50000, 'modes': ['high_resolution']},
+   334→            'doppler': {'range_km': 2, 'accuracy_m': 0.5, 'frequency_hz': 5000, 'modes': ['speed']},
+   335→            'multibeam': {'range_km': 8, 'accuracy_m': 0.5, 'frequency_hz': 20000, 'modes': ['bathymetry']},
+   336→            'parametric': {'range_km': 5, 'accuracy_m': 0.2, 'frequency_hz': 100000, 'modes': ['sub_bottom']},
+   337→            'communication': {'range_km': 50, 'accuracy_m': 100, 'frequency_hz': 1000, 'modes': ['data_transfer']},
+   338→        }
+   339→        LIDAR_TYPES = {
+   340→            'terrain': {'range_m': 2000, 'accuracy_m': 0.1, 'points_per_sec': 1000000, 'modes': ['mapping']},
+   341→            'obstacle': {'range_m': 200, 'accuracy_m': 0.01, 'points_per_sec': 100000, 'modes': ['detection']},
+   342→            'atmospheric': {'range_m': 10000, 'accuracy_m': 1, 'points_per_sec': 10000, 'modes': ['wind']},
+   343→            'bathymetric': {'range_m': 50, 'accuracy_m': 0.1, 'points_per_sec': 50000, 'modes': ['underwater']},
+   344→            'flash': {'range_m': 100, 'accuracy_m': 0.05, 'points_per_sec': 500000, 'modes': ['imaging']},
+   345→            'doppler': {'range_m': 500, 'accuracy_m': 0.1, 'points_per_sec': 200000, 'modes': ['velocity']},
+   346→        }
+   347→        ACOUSTIC_TYPES = {
+   348→            'gunshot': {'range_m': 500, 'frequency_hz': 2000, 'detection_accuracy': 0.95, 'modes': ['detection', 'classification', 'localization']},
+   349→            'drone': {'range_m': 300, 'frequency_hz': 5000, 'detection_accuracy': 0.90, 'modes': ['detection', 'classification']},
+   350→            'explosion': {'range_m': 2000, 'frequency_hz': 100, 'detection_accuracy': 0.98, 'modes': ['detection', 'localization']},
+   351→            'vehicle': {'range_m': 1000, 'frequency_hz': 100, 'detection_accuracy': 0.85, 'modes': ['detection', 'classification']},
+   352→            'footstep': {'range_m': 50, 'frequency_hz': 1000, 'detection_accuracy': 0.80, 'modes': ['detection', 'localization']},
+   353→        }
+   354→        EW_TYPES = {
+   355→            'jamming': {'range_km': 50, 'power_w': 1000, 'modes': ['noise', 'deceptive']},
+   356→            'spoofing': {'range_km': 30, 'power_w': 500, 'modes': ['gps', 'radar', 'communication']},
+   357→            'electronic_intelligence': {'range_km': 100, 'power_w': 100, 'modes': ['signal_intelligence']},
+   358→            'communication_jamming': {'range_km': 20, 'power_w': 200, 'modes': ['voice', 'data']},
+   359→        }
+   360→        WEAPONS = {
+   361→            'colt_python': {'type': 'handgun', 'caliber': '.357 Magnum', 'capacity': 6, 'range_m': 50},
+   362→            'glock_43': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 6, 'range_m': 50},
+   363→            'smith_wesson_m_p_40': {'type': 'handgun', 'caliber': '.40 S&W', 'capacity': 15, 'range_m': 50},
+   364→            'sig_sauer_p320': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 17, 'range_m': 50},
+   365→            'hk_vp9': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 15, 'range_m': 50},
+   366→            'beretta_92fs': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 15, 'range_m': 50},
+   367→            'cz_75': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 16, 'range_m': 50},
+   368→            'walther_ppk': {'type': 'handgun', 'caliber': '.380 ACP', 'capacity': 7, 'range_m': 30},
+   369→            'ruger_lcp': {'type': 'handgun', 'caliber': '.380 ACP', 'capacity': 6, 'range_m': 30},
+   370→            'taurus_pt111': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 12, 'range_m': 50},
+   371→            'springfield_xd': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 16, 'range_m': 50},
+   372→            'fn_fnx_45': {'type': 'handgun', 'caliber': '.45 ACP', 'capacity': 15, 'range_m': 50},
+   373→            'ar_15': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 600},
+   374→            'ak_47': {'type': 'rifle', 'caliber': '7.62x39mm', 'capacity': 30, 'range_m': 400},
+   375→            'm4_carbine': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+   376→            'm16': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 550},
+   377→            'hk416': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 600},
+   378→            'fn_scar': {'type': 'rifle', 'caliber': '7.62x51mm', 'capacity': 20, 'range_m': 700},
+   379→            'sig_mcx': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+   380→            'tavor_x95': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+   381→            'aug_a3': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+   382→            'galil_ace': {'type': 'rifle', 'caliber': '7.62x39mm', 'capacity': 30, 'range_m': 400},
+   383→            'remington_870': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 6, 'range_m': 50},
+   384→            'mossberg_500': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 6, 'range_m': 50},
+   385→            'benelli_m4': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 5, 'range_m': 50},
+   386→            'beretta_1301': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 7, 'range_m': 50},
+   387→            'kel_tec_ksg': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 14, 'range_m': 50},
+   388→            'mp5': {'type': 'smg', 'caliber': '9x19mm', 'capacity': 30, 'range_m': 200},
+   389→            'mp7': {'type': 'smg', 'caliber': '4.6x30mm', 'capacity': 40, 'range_m': 200},
+   390→            'vector': {'type': 'smg', 'caliber': '.45 ACP', 'capacity': 30, 'range_m': 150},
+   391→            'p90': {'type': 'smg', 'caliber': '5.7x28mm', 'capacity': 50, 'range_m': 200},
+   392→            'uzi': {'type': 'smg', 'caliber': '9x19mm', 'capacity': 32, 'range_m': 150},
+   393→            'm249': {'type': 'lmg', 'caliber': '5.56x45mm', 'capacity': 200, 'range_m': 800},
+   394→            'm60': {'type': 'lmg', 'caliber': '7.62x51mm', 'capacity': 100, 'range_m': 800},
+   395→            'pk_m': {'type': 'lmg', 'caliber': '7.62x54mmR', 'capacity': 100, 'range_m': 800},
+   396→            'rpk': {'type': 'lmg', 'capacity': 75, 'caliber': '7.62x39mm', 'range_m': 600},
+   397→            'm40a3': {'type': 'sniper', 'caliber': '7.62x51mm', 'capacity': 5, 'range_m': 1000},
+   398→            'm24': {'type': 'sniper', 'caliber': '7.62x51mm', 'capacity': 5, 'range_m': 1000},
+   399→            'barrett_m82': {'type': 'sniper', 'caliber': '.50 BMG', 'capacity': 10, 'range_m': 2000},
+   400→            'cheytac_m200': {'type': 'sniper', 'caliber': '.408 Cheytac', 'capacity': 7, 'range_m': 2200},
+   401→            'awp': {'type': 'sniper', 'caliber': '.338 Lapua', 'capacity': 5, 'range_m': 1500},
+   402→            'm67_grenade': {'type': 'explosive', 'payload': 'HE', 'blast_radius_m': 15, 'range_m': 40},
+   403→            'rpg_7': {'type': 'explosive', 'payload': 'HEAT', 'blast_radius_m': 5, 'range_m': 300},
+   404→            'c4': {'type': 'explosive', 'payload': 'C4', 'blast_radius_m': 20, 'range_m': 0},
+   405→            'claymore': {'type': 'explosive', 'payload': 'fragmentation', 'blast_radius_m': 50, 'range_m': 50},
+   406→            'ied': {'type': 'explosive', 'payload': 'HE', 'blast_radius_m': 30, 'range_m': 0},
+   407→            'thermite': {'type': 'explosive', 'payload': 'thermite', 'blast_radius_m': 1, 'range_m': 0},
+   408→            'laser_weapon': {'type': 'directed_energy', 'power_kw': 300, 'range_m': 5000, 'cooldown_sec': 10},
+   409→            'microwave_weapon': {'type': 'directed_energy', 'power_kw': 100, 'range_m': 1000, 'cooldown_sec': 30},
+   410→            'plasma_weapon': {'type': 'directed_energy', 'power_kw': 1000, 'range_m': 2000, 'cooldown_sec': 60},
+   411→            'emp': {'type': 'directed_energy', 'power_gv': 100, 'range_m': 500, 'cooldown_sec': 120},
+   412→            'javelin': {'type': 'missile', 'range_km': 2.5, 'speed_mach': 1.5, 'payload_kg': 8.4},
+   413→            'stinger': {'type': 'missile', 'range_km': 8, 'speed_mach': 2.2, 'payload_kg': 3},
+   414→            'hellfire': {'type': 'missile', 'range_km': 8, 'speed_mach': 1.5, 'payload_kg': 9},
+   415→            'tomahawk': {'type': 'missile', 'range_km': 2500, 'speed_mach': 0.8, 'payload_kg': 450},
+   416→            'taser': {'type': 'non_lethal', 'range_m': 10, 'voltage': 50000, 'recharge_sec': 5},
+   417→            'rubber_bullets': {'type': 'non_lethal', 'range_m': 50, 'impact_joules': 100},
+   418→            'water_cannon': {'type': 'non_lethal', 'range_m': 30, 'pressure_psi': 1000},
+   419→            'flashbang': {'type': 'non_lethal', 'range_m': 10, 'lumens': 1000000},
+   420→            'logic_bomb': {'type': 'cyber_kinetic', 'target': 'firmware', 'activation': 'trigger'},
+   421→            'firmware_corruption': {'type': 'cyber_kinetic', 'target': 'embedded_system', 'method': 'malicious_update'},
+   422→        }
+   423→        MARTIAL_ARTS = {
+   424→            'muay_thai': {'type': 'striking', 'origin': 'Thailand', 'techniques': ['punches', 'knees', 'elbows', 'kicks', 'clinching']},
+   425→            'karate': {'type': 'striking', 'origin': 'Japan', 'techniques': ['punches', 'kicks', 'knee_strikes', 'elbow_strikes', 'open_hand']},
+   426→            'taekwondo': {'type': 'striking', 'origin': 'Korea', 'techniques': ['kicks', 'punches', 'blocks']},
+   427→            'boxing': {'type': 'striking', 'origin': 'UK', 'techniques': ['jabs', 'hooks', 'uppercuts', 'footwork']},
+   428→            'kickboxing': {'type': 'striking', 'origin': 'Japan/USA', 'techniques': ['punches', 'kicks', 'knees']},
+   429→            'savate': {'type': 'striking', 'origin': 'France', 'techniques': ['punches', 'kicks']},
+   430→            'sanda': {'type': 'striking', 'origin': 'China', 'techniques': ['punches', 'kicks', 'throws']},
+   431→            'bjj': {'type': 'grappling', 'origin': 'Brazil', 'techniques': ['submissions', 'positioning', 'ground_work']},
+   432→            'judo': {'type': 'grappling', 'origin': 'Japan', 'techniques': ['throws', 'joint_locks', 'pins']},
+   433→            'wrestling': {'type': 'grappling', 'origin': 'Global', 'techniques': ['takedowns', 'pins', 'escapes']},
+   434→            'sambo': {'type': 'grappling', 'origin': 'Russia', 'techniques': ['throws', 'submissions', 'ground_work']},
+   435→            'catch_wrestling': {'type': 'grappling', 'origin': 'UK/USA', 'techniques': ['submissions', 'pins', 'takedowns']},
+   436→            'wing_chun': {'type': 'traditional', 'origin': 'China', 'techniques': ['striking', 'trapping', 'close_combat']},
+   437→            'kung_fu': {'type': 'traditional', 'origin': 'China', 'techniques': ['striking', 'kicks', 'blocks']},
+   438→            'aikido': {'type': 'traditional', 'origin': 'Japan', 'techniques': ['joint_locks', 'throws', 'blending']},
+   439→            'hapkido': {'type': 'traditional', 'origin': 'Korea', 'techniques': ['joint_locks', 'strikes', 'throws']},
+   440→            'krav_maga': {'type': 'traditional', 'origin': 'Israel', 'techniques': ['strikes', 'defenses', 'counter_attacks']},
+   441→            'ninjutsu': {'type': 'traditional', 'origin': 'Japan', 'techniques': ['stealth', 'espionage', 'assassination']},
+   442→            'kali': {'type': 'weapons', 'origin': 'Philippines', 'techniques': ['knife_fighting', 'stick_fighting']},
+   443→            'escrima': {'type': 'weapons', 'origin': 'Philippines', 'techniques': ['stick', 'knife', 'empty_hand']},
+   444→            'kendo': {'type': 'weapons', 'origin': 'Japan', 'techniques': ['swordsmanship']},
+   445→            'fencing': {'type': 'weapons', 'origin': 'Europe', 'techniques': ['foil', 'epee', 'saber']},
+   446→            'iaido': {'type': 'weapons', 'origin': 'Japan', 'techniques': ['sword_drawing', 'cutting']},
+   447→            'mma': {'type': 'hybrid', 'origin': 'Global', 'techniques': ['striking', 'grappling', 'submissions']},
+   448→            'jeet_kune_do': {'type': 'hybrid', 'origin': 'USA', 'techniques': ['striking', 'trapping', 'grappling']},
+   449→        }
+   450→
+   451→        class SensorCommand(BaseModel):
+   452→            sensor_type: str
+   453→            mode: str
+   454→            params: dict = {}
+   455→
+   456→        class WeaponCommand(BaseModel):
+   457→            weapon: str
+   458→            target: str
+   459→            fire: bool = False
+   460→
+   461→        @app.post('/sensors/radar')
+   462→        async def radar(cmd: SensorCommand):
+   463→            if cmd.sensor_type not in RADAR_TYPES:
+   464→                return {'error': 'Unknown radar type'}
+   465→            return {'status': 'radar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+   466→                    'data': {'contacts': random.randint(0, 20), 'range': random.randint(1, 100), 'bearing': random.randint(0, 360)}}
+   467→
+   468→        @app.post('/sensors/sonar')
+   469→        async def sonar(cmd: SensorCommand):
+   470→            if cmd.sensor_type not in SONAR_TYPES:
+   471→                return {'error': 'Unknown sonar type'}
+   472→            return {'status': 'sonar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+   473→                    'data': {'contacts': random.randint(0, 10), 'depth': random.randint(1, 1000), 'bearing': random.randint(0, 360)}}
+   474→
+   475→        @app.post('/sensors/lidar')
+   476→        async def lidar(cmd: SensorCommand):
+   477→            if cmd.sensor_type not in LIDAR_TYPES:
+   478→                return {'error': 'Unknown LiDAR type'}
+   479→            return {'status': 'lidar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+   480→                    'data': {'points': random.randint(1000, 100000), 'range': random.randint(1, 2000), 'resolution': round(random.uniform(0.01, 1), 3)}}
+   481→
+   482→        @app.post('/sensors/acoustic')
+   483→        async def acoustic(cmd: SensorCommand):
+   484→            if cmd.sensor_type not in ACOUSTIC_TYPES:
+   485→                return {'error': 'Unknown acoustic type'}
+   486→            return {'status': 'acoustic_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+   487→                    'data': {'detections': random.randint(0, 5), 'confidence': round(random.uniform(0.7, 0.99), 2), 'range': random.randint(1, 500)}}
+   488→
+   489→        @app.post('/sensors/ew')
+   490→        async def ew(cmd: SensorCommand):
+   491→            if cmd.sensor_type not in EW_TYPES:
+   492→                return {'error': 'Unknown EW type'}
+   493→            return {'status': 'ew_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+   494→                    'data': {'targets_affected': random.randint(0, 10), 'effective_range': random.randint(1, 100)}}
+   495→
+   496→        @app.post('/weapons/fire')
+   497→        async def fire_weapon(cmd: WeaponCommand):
+   498→            if cmd.weapon not in WEAPONS:
+   499→                return {'error': 'Unknown weapon'}
+   500→            weapon = WEAPONS[cmd.weapon]
+   501→            if cmd.fire:
+   502→                return {'status': 'fired', 'weapon': cmd.weapon, 'target': cmd.target, 'specs': weapon, 'timestamp': 'now'}
+   503→            return {'status': 'armed', 'weapon': cmd.weapon, 'specs': weapon}
+   504→
+   505→        @app.get('/weapons')
+   506→        async def list_weapons():
+   507→            return {'weapons': list(WEAPONS.keys())}
+   508→
+   509→        @app.get('/weapons/{weapon}')
+   510→        async def get_weapon(weapon: str):
+   511→            if weapon not in WEAPONS:
+   512→                return {'error': 'Weapon not found'}
+   513→            return WEAPONS[weapon]
+   514→
+   515→        @app.get('/martial_arts')
+   516→        async def list_martial_arts():
+   517→            return {'styles': list(MARTIAL_ARTS.keys())}
+   518→
+   519→        @app.get('/martial_arts/{style}')
+   520→        async def get_martial_art(style: str):
+   521→            if style not in MARTIAL_ARTS:
+   522→                return {'error': 'Style not found'}
+   523→            return MARTIAL_ARTS[style]
+   524→
+   525→        @app.get('/sensors/radar/types')
+   526→        async def list_radar():
+   527→            return {'types': list(RADAR_TYPES.keys())}
+   528→
+   529→        @app.get('/sensors/sonar/types')
+   530→        async def list_sonar():
+   531→            return {'types': list(SONAR_TYPES.keys())}
+   532→
+   533→        @app.get('/sensors/lidar/types')
+   534→        async def list_lidar():
+   535→            return {'types': list(LIDAR_TYPES.keys())}
+   536→
+   537→        @app.get('/sensors/acoustic/types')
+   538→        async def list_acoustic():
+   539→            return {'types': list(ACOUSTIC_TYPES.keys())}
+   540→
+   541→        @app.get('/sensors/ew/types')
+   542→        async def list_ew():
+   543→            return {'types': list(EW_TYPES.keys())}
+   544→
+   545→        if __name__ == '__main__':
+   546→            uvicorn.run(app, host='0.0.0.0', port=9901)
+   547→'''
+   548→
+   549→# Save as JSON for the main script to load
+   550→data = {
+   551→    "new_offensive": NEW_OFFENSIVE,
+   552→    "defensive": DEFENSIVE,
+   553→    "micro": MICRO,
+   554→    "sensors_orch": SENSORS_ORCH,
+   555→}
+   556→with open("/home/z/my-project/scripts/_babirye_data.json", "w") as f:
+   557→    json.dump(data, f, ensure_ascii=False)
+   558→print(f"Part 1 OK: {len(NEW_OFFENSIVE)} offensive, {len(DEFENSIVE)} defensive, {len(MICRO)} micro, sensors orch loaded")
