@@ -1,0 +1,772 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & USERS
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  role          String    @default("analyst") // admin, operator, analyst, viewer
+  mfaEnabled    Boolean   @default(false)
+  mfaSecret     String?
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  failedAttempts Int      @default(0)
+  lockedUntil   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  apiTokens     ApiToken[]
+  auditLogs     AuditLog[]
+  councilVotes  CouncilVote[]
+  createdTasks  Task[]    @relation("TaskCreator")
+
+  @@index([email])
+  @@index([role])
+}
+
+model ApiToken {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  name        String
+  purpose     String?
+  ttlSeconds  Int      @default(28800) // 8 hours
+  isRevoked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  lastUsedAt  DateTime?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+// ============================================================================
+// AGENTS & ORCHESTRATION
+// ============================================================================
+
+model Agent {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  domain      String
+  description String
+  version     String   @default("1.0.0")
+  status      String   @default("idle") // idle, running, error, disabled
+  config      String   @default("{}") // JSON config
+  metrics     String   @default("{}") // JSON metrics
+  lastActivityAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks       Task[]   @relation("AgentTasks")
+
+  @@index([domain])
+  @@index([status])
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  agentId       String?
+  creatorId     String?
+  type          String   // forensic, offensive, defensive, micro_defensive, sensors, vip, potentials
+  status        String   @default("pending") // pending, running, completed, failed, cancelled
+  priority      Int      @default(5) // 1-10
+  input         String   @default("{}") // JSON input
+  output        String?  // JSON output
+  errorMessage  String?
+  progress      Int      @default(0) // 0-100
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  agent         Agent?   @relation("AgentTasks", fields: [agentId], references: [id])
+  creator       User?    @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  @@index([status])
+  @@index([type])
+  @@index([agentId])
+  @@index([priority])
+}
+
+// ============================================================================
+// EXPERT COUNCIL
+// ============================================================================
+
+model CouncilDomain {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  specialty   String
+  confidenceBase Float  @default(0.3)
+  isActive    Boolean  @default(true)
+  weight      Float    @default(1.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  votes       CouncilVote[]
+  decisions   CouncilDecision[]
+
+  @@index([isActive])
+}
+
+model CouncilVote {
+  id          String   @id @default(cuid())
+  domainId    String
+  userId      String?
+  decisionId  String?
+  vote        String   // approved, rejected, abstain, veto
+  confidence  Float
+  reasoning   String?
+  createdAt   DateTime @default(now())
+
+  domain      CouncilDomain    @relation(fields: [domainId], references: [id])
+  user        User?            @relation(fields: [userId], references: [id])
+  decision    CouncilDecision? @relation(fields: [decisionId], references: [id])
+
+  @@index([domainId])
+  @@index([decisionId])
+}
+
+model CouncilDecision {
+  id            String   @id @default(cuid())
+  domainId      String
+  query         String
+  decision      String   // approved, rejected, deferred
+  confidence    Float
+  vetoBy        String?
+  reasoning     String
+  voteCount     Int
+  approveCount  Int
+  rejectCount   Int
+  abstainCount  Int
+  createdAt     DateTime @default(now())
+
+  domain        CouncilDomain  @relation(fields: [domainId], references: [id])
+  votes         CouncilVote[]
+
+  @@index([domainId])
+  @@index([decision])
+}
+
+// ============================================================================
+// SELF-ATTACK WALL
+// ============================================================================
+
+model WallGuard {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  category    String   // injection, exfiltration, privilege, integrity, crypto, supply_chain, input_validation
+  isActive    Boolean  @default(true)
+  blockCount  Int      @default(0)
+  lastBlockedAt DateTime?
+  severity    String   @default("critical") // critical, high, medium, low
+  config      String   @default("{}") // JSON config
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blocks      WallBlock[]
+
+  @@index([isActive])
+  @@index([category])
+}
+
+model WallBlock {
+  id          String   @id @default(cuid())
+  guardId     String
+  action      String
+  service     String?
+  params      String   @default("{}") // JSON
+  clientIp    String?
+  reason      String
+  createdAt   DateTime @default(now())
+
+  guard       WallGuard @relation(fields: [guardId], references: [id], onDelete: Cascade)
+
+  @@index([guardId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// FORENSIC TOOLS (12)
+// ============================================================================
+
+model ForensicTool {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // android, ios, computer, network, memory, advanced
+  description String
+  version     String
+  status      String   @default("dormant") // dormant, active, error
+  containerImage String
+  port        Int?
+  config      String   @default("{}")
+  lastDeployedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cases       ForensicCase[]
+
+  @@index([category])
+  @@index([status])
+}
+
+model ForensicCase {
+  id          String   @id @default(cuid())
+  caseNumber  String   @unique
+  title       String
+  description String
+  status      String   @default("open") // open, in_progress, closed, archived
+  priority    String   @default("medium") // low, medium, high, critical
+  assignedTo  String?
+  toolId      String?
+  evidence    String   @default("[]") // JSON array of evidence items
+  findings    String?
+  report      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tool        ForensicTool? @relation(fields: [toolId], references: [id])
+
+  @@index([status])
+  @@index([priority])
+}
+
+// ============================================================================
+// OFFENSIVE TOOLS (72)
+// ============================================================================
+
+model OffensiveTool {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // recon, exploitation, post_exploitation, c2, persistence, lateral, payload, social_engineering, wireless, hardware
+  subcategory String?
+  description String
+  version     String
+  status      String   @default("dormant") // dormant, active, error
+  containerImage String
+  port        Int?
+  config      String   @default("{}")
+  riskLevel   String   @default("high") // low, medium, high, critical
+  requiresAuth Boolean @default(true)
+  lastDeployedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  operations  Operation[]
+
+  @@index([category])
+  @@index([status])
+  @@index([riskLevel])
+}
+
+model Operation {
+  id            String   @id @default(cuid())
+  toolId        String?
+  name          String
+  description   String
+  status        String   @default("planning") // planning, active, completed, failed, cancelled
+  scope         String   // authorized, internal, external
+  startDate     DateTime?
+  endDate       DateTime?
+  objectives    String   @default("[]") // JSON
+  results       String?
+  operatorId    String?
+  findings      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tool          OffensiveTool? @relation(fields: [toolId], references: [id])
+
+  @@index([status])
+  @@index([scope])
+}
+
+// ============================================================================
+// DEFENSIVE TOOLS (100)
+// ============================================================================
+
+model DefensiveTool {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // network, endpoint, application, identity, data, cloud, micro
+  subcategory String?
+  description String
+  version     String
+  status      String   @default("dormant") // dormant, active, error
+  containerImage String
+  port        Int?
+  config      String   @default("{}")
+  autoDeploy  Boolean  @default(false)
+  lastDeployedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  alerts      SecurityAlert[]
+
+  @@index([category])
+  @@index([status])
+}
+
+// ============================================================================
+// MICRO-DEFENSIVE TOOLS (150) + GUARDS
+// ============================================================================
+
+model MicroDefensiveTool {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // input_validation, output_encoding, sanitization, integrity, rate_limiting, cors, header_security, cookie_security
+  description String
+  status      String   @default("dormant") // dormant, active, error
+  config      String   @default("{}")
+  isActive    Boolean  @default(true)
+  blockCount  Int      @default(0)
+  lastTriggeredAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// ============================================================================
+// SENSORS (31 types)
+// ============================================================================
+
+model Sensor {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // radar, sonar, lidar, acoustic, ew
+  subtype     String?
+  description String
+  status      String   @default("offline") // online, offline, error, maintenance
+  config      String   @default("{}")
+  location    String?
+  range       Float?
+  frequency   String?
+  sensitivity Float    @default(0.5)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  readings    SensorReading[]
+
+  @@index([type])
+  @@index([status])
+}
+
+model SensorReading {
+  id          String   @id @default(cuid())
+  sensorId    String
+  value       Float
+  unit        String?
+  metadata    String   @default("{}") // JSON
+  confidence  Float    @default(1.0)
+  isAnomaly   Boolean  @default(false)
+  anomalyScore Float?
+  createdAt   DateTime @default(now())
+
+  sensor      Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId])
+  @@index([createdAt])
+  @@index([isAnomaly])
+}
+
+// ============================================================================
+// VIP PROTECTION
+// ============================================================================
+
+model VipProfile {
+  id            String   @id @default(cuid())
+  name          String
+  designation   String
+  threatLevel   String   @default("medium") // low, medium, high, critical
+  protectionLevel String @default("standard") // standard, elevated, maximum
+  status        String   @default("active") // active, inactive, emergency
+  biometricHash String?
+  bleTagId      String?
+  emergencyContact String?
+  medicalInfo   String?
+  travelSchedule String? // JSON
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  drones        VipDrone[]
+  vehicles      VipVehicle[]
+  wearables     VipWearable[]
+  incidents     VipIncident[]
+
+  @@index([status])
+  @@index([threatLevel])
+}
+
+model VipDrone {
+  id          String   @id @default(cuid())
+  vipId       String
+  name        String
+  model       String
+  status      String   @default("standby") // standby, airborne, returning, charging, maintenance
+  batteryLevel Int     @default(100)
+  altitude    Float?
+  speed       Float?
+  gpsCoords   String?  // JSON {lat, lng}
+  cameraActive Boolean @default(false)
+  thermalActive Boolean @default(false)
+  mission     String?  // JSON current mission
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vip         VipProfile @relation(fields: [vipId], references: [id], onDelete: Cascade)
+
+  @@index([vipId])
+  @@index([status])
+}
+
+model VipVehicle {
+  id          String   @id @default(cuid())
+  vipId       String
+  name        String
+  type        String   // sedan, suv, armored, motorcycle
+  plate       String?
+  status      String   @default("parked") // parked, en_route, arrived, maintenance
+  fuelLevel   Int      @default(100)
+  gpsCoords   String?  // JSON {lat, lng}
+  driverId    String?
+  route       String?  // JSON
+  speed       Float?
+  heading     Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vip         VipProfile @relation(fields: [vipId], references: [id], onDelete: Cascade)
+
+  @@index([vipId])
+  @@index([status])
+}
+
+model VipWearable {
+  id          String   @id @default(cuid())
+  vipId       String
+  type        String   // smartwatch, health_monitor, panic_button, gps_tracker
+  deviceName  String
+  status      String   @default("connected") // connected, disconnected, alert, low_battery
+  batteryLevel Int     @default(100)
+  heartRate   Int?
+  bloodPressure String? // JSON
+  temperature  Float?
+  sosTriggered Boolean @default(false)
+  lastPingAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vip         VipProfile @relation(fields: [vipId], references: [id], onDelete: Cascade)
+
+  @@index([vipId])
+  @@index([status])
+}
+
+model VipIncident {
+  id          String   @id @default(cuid())
+  vipId       String
+  type        String   // threat, medical, route_deviation, perimeter_breach, sos
+  severity    String   @default("medium") // low, medium, high, critical
+  description String
+  response    String?
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  vip         VipProfile @relation(fields: [vipId], references: [id], onDelete: Cascade)
+
+  @@index([vipId])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// POTENTIALS ENGINE (300+ capabilities)
+// ============================================================================
+
+model Potential {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // offensive, defensive, forensic, intelligence, vip, cyber_kinetic, electronic_warfare
+  subcategory String?
+  description String
+  requirements String   @default("[]") // JSON array of required tools/skills
+  difficulty  String   @default("intermediate") // beginner, intermediate, advanced, expert
+  impact      String   @default("medium") // low, medium, high, critical
+  isActive    Boolean  @default(true)
+  tags        String   @default("[]") // JSON array of tags
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  scenarios   Scenario[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([isActive])
+}
+
+model Scenario {
+  id            String   @id @default(cuid())
+  potentialId   String
+  name          String
+  description   String
+  preconditions String   @default("[]") // JSON
+  steps         String   @default("[]") // JSON array of steps
+  expectedOutcome String?
+  riskAssessment String? // JSON
+  status        String   @default("draft") // draft, tested, verified, deprecated
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  potential     Potential @relation(fields: [potentialId], references: [id], onDelete: Cascade)
+
+  @@index([potentialId])
+  @@index([status])
+}
+
+// ============================================================================
+// SECURITY ALERTS & AUDIT LOGS
+// ============================================================================
+
+model SecurityAlert {
+  id          String   @id @default(cuid())
+  toolId      String?
+  source      String
+  severity    String   @default("medium") // info, low, medium, high, critical
+  type        String   // intrusion, malware, anomaly, policy_violation, data_breach, dos, phishing
+  title       String
+  description String
+  ioc         String?  // JSON indicators of compromise
+  status      String   @default("new") // new, investigating, resolved, false_positive, escalated
+  assignedTo  String?
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tool        DefensiveTool? @relation(fields: [toolId], references: [id])
+
+  @@index([severity])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  resource    String
+  details     String   @default("{}") // JSON
+  ipAddress   String?
+  userAgent   String?
+  statusCode  Int?
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SPA GATEWAYS
+// ============================================================================
+
+model SpaGateway {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subsystem   String   // forensic, offensive, defensive, micro_defensive, sensors, vip
+  port        Int
+  host        String   @default("0.0.0.0")
+  isActive    Boolean  @default(false)
+  secretHash  String
+  deployedServices String @default("[]") // JSON array
+  network     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([subsystem])
+  @@index([isActive])
+}
+
+// ============================================================================
+// WEAPONS DATABASE (80+)
+// ============================================================================
+
+model Weapon {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // handgun, rifle, shotgun, smg, lmg, sniper, explosive, directed_energy, missile, non_lethal, cyber_kinetic
+  subcategory String?
+  caliber     String?
+  range       Float?
+  rateOfFire  String?
+  magazineCapacity Int?
+  status      String   @default("armory") // armory, deployed, maintenance, decommissioned
+  serialNumber String? @unique
+  assignedTo  String?
+  lastInspectionAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+}
+
+model MartialArt {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  style       String   // striking, grappling, traditional, weapons, hybrid
+  origin      String
+  description String
+  techniques  String   @default("[]") // JSON array
+  difficulty  String   @default("intermediate")
+  effectiveness String   @default("[]") // JSON array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([style])
+}
+
+// ============================================================================
+// INTELLIGENCE FEEDS
+// ============================================================================
+
+model IntelligenceFeed {
+  id          String   @id @default(cuid())
+  name        String
+  source      String   // omniroute, iron_sight, open_threat, mini_shodan, custom
+  feedType    String   // ioc, vulnerability, malware, threat_actor, dark_web, geo_political
+  url         String?
+  apiKey      String?
+  frequency   String   @default("hourly") // real_time, hourly, daily, weekly
+  isActive    Boolean  @default(true)
+  lastFetchedAt DateTime?
+  lastError   String?
+  itemCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       IntelItem[]
+
+  @@index([source])
+  @@index([feedType])
+  @@index([isActive])
+}
+
+model IntelItem {
+  id          String   @id @default(cuid())
+  feedId      String
+  title       String
+  description String
+  ioc         String?  // JSON
+  severity    String   @default("medium")
+  confidence  Float    @default(0.5)
+  tags        String   @default("[]") // JSON
+  raw         String?  // Raw feed data
+  isProcessed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  feed        IntelligenceFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@index([feedId])
+  @@index([severity])
+  @@index([isProcessed])
+}
+
+// ============================================================================
+// SYSTEM SETTINGS
+// ============================================================================
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  category    String   @default("general") // general, security, network, api, notification, database
+  isSecret    Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([key])
+}
+
+// ============================================================================
+// CONSTITUTIONS
+// ============================================================================
+
+model Constitution {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subsystem   String   // babirye, forensic, offensive, defensive, micro_defensive, sensors
+  content     String
+  version     String   @default("1.0.0")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([subsystem])
+}
+
+// ============================================================================
+// REPORTS
+// ============================================================================
+
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   // incident, forensic, vulnerability, compliance, intelligence, operation
+  format      String   @default("json") // json, pdf, html, markdown
+  content     String
+  summary     String?
+  classification String @default("internal") // internal, confidential, secret, top_secret
+  generatedBy String?
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+  @@index([classification])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String?
+  type        String   // alert, task, system, vip, sensor
+  title       String
+  message     String
+  severity    String   @default("info") // info, warning, error, critical
+  isRead      Boolean  @default(false)
+  actionUrl   String?
+  metadata    String   @default("{}") // JSON
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
