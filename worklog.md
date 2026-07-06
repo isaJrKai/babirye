@@ -32,3 +32,33 @@ Stage Summary:
 - Output: /home/z/my-project/download/BABIRYE_v10.0.0_Phase2_Fixed.txt (266KB, 8495 lines)
 - 11 fixes applied: HMAC-SHA256 bearer token auth (23 endpoints), rate limiting (120/min auth, 10/min public), request ID + audit middleware, 18 self-attack wall guards implemented (all 25 now have real logic), lazy singleton agent registry with auto-registration, SecurityManager wired to config, Expert Council hardened (base 0.3, query-length penalty), HTTPS startup warning, bootstrap token emission, uvicorn body/header limits, Pydantic Field() validation on 10 fields
 - Phase 1 + Phase 2 combined: 25 fixes, +286 lines over original
+
+---
+Task ID: 3
+Agent: main
+Task: BABIRYE Full System Build — Extract, implement, verify
+
+Work Log:
+- Extracted 90 files from monolithic text into proper project directory tree (/download/babirye/)
+- Created src/core/models.py with 6 SQLAlchemy 2.0 ORM models (AgentRecord, TaskRecord, CouncilDecisionRecord, AuditLog, WallBlockEvent, PotentialRecord)
+- Updated src/core/database.py with engine tuning, init_db, ensure_tables, get_db dependency
+- Created src/core/auth.py — extracted auth from main.py to fix circular imports
+- Rewrote src/api/main.py — clean lifespan, rate limiting, CORS, audit middleware
+- Rewrote all 8 agent execute() methods with real logic, error handling, DB logging
+- Rewrote src/agents/base.py with log_to_db() for task persistence
+- Created complete sensors_agent.py: 31 sensor types (radar/sonar/lidar/acoustic/EW), 80+ weapons (10 categories), 25 martial arts (5 styles)
+- Created complete vip_agent.py: 6 drones, 4 vehicles, 3 wearables, 6 services
+- Created complete offensive_agent.py: 72 tools across 11 categories
+- Rewrote all 8 API route files with clean auth imports
+- Subagent built 17 forensic/defensive modules with real implementations
+- Subagent built potentials_engine.py with 314 named potentials across 5 categories
+- Final: 49 Python files, ALL compile clean, 141 total project files (1.08MB)
+
+Stage Summary:
+- Output: /home/z/my-project/download/babirye/ (complete project directory)
+- 49 Python files (274KB), 8 Docker/Compose (122KB), 18 shell scripts, 7 .env files, 7 constitutions
+- Every agent has try/except, DB logging, council consultation
+- Auth, rate limiting, audit logging fully functional
+- 25/25 self-attack wall guards with real detection logic
+- 310+ named potentials with descriptions
+- All forensic and defensive modules have real class-based implementations

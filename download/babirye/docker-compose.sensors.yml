@@ -1,0 +1,259 @@
+services:
+  sensors-orchestrator:
+    image: python:3.11-slim
+    container_name: babirye-sensors-orchestrator
+    restart: "no"
+    command: >
+      sh -c "pip install fastapi uvicorn pydantic numpy scipy opencv-python-headless && cat > /app/sensors_orchestrator.py << 'SENSORS_EOF'
+import json, asyncio, math, random
+        from fastapi import FastAPI, WebSocket
+        from pydantic import BaseModel
+        import uvicorn
+
+        app = FastAPI()
+
+        RADAR_TYPES = {
+            'doppler': {'range_km': 50, 'accuracy_m': 10, 'update_hz': 10, 'modes': ['search', 'track', 'weather']},
+            'phased_array': {'range_km': 200, 'accuracy_m': 1, 'update_hz': 20, 'modes': ['search', 'track', 'fire_control']},
+            'passive': {'range_km': 300, 'accuracy_m': 50, 'update_hz': 1, 'modes': ['search', 'electronic_intelligence']},
+            'weather': {'range_km': 100, 'accuracy_m': 100, 'update_hz': 1, 'modes': ['precipitation', 'wind']},
+            'ground_penetrating': {'range_m': 10, 'accuracy_m': 0.1, 'update_hz': 5, 'modes': ['buried_object']},
+            'over_the_horizon': {'range_km': 1000, 'accuracy_m': 1000, 'update_hz': 0.1, 'modes': ['early_warning']},
+            'synthetic_aperture': {'range_km': 50, 'accuracy_m': 0.1, 'update_hz': 0.01, 'modes': ['imaging']},
+            'continuous_wave': {'range_km': 20, 'accuracy_m': 5, 'update_hz': 50, 'modes': ['speed']},
+        }
+        SONAR_TYPES = {
+            'active': {'range_km': 10, 'accuracy_m': 1, 'frequency_hz': 3000, 'modes': ['search', 'track']},
+            'passive': {'range_km': 30, 'accuracy_m': 10, 'frequency_hz': 100, 'modes': ['listen', 'classification']},
+            'side_scan': {'range_km': 1, 'accuracy_m': 0.1, 'frequency_hz': 100000, 'modes': ['imaging']},
+            'synthetic_aperture': {'range_km': 5, 'accuracy_m': 0.01, 'frequency_hz': 50000, 'modes': ['high_resolution']},
+            'doppler': {'range_km': 2, 'accuracy_m': 0.5, 'frequency_hz': 5000, 'modes': ['speed']},
+            'multibeam': {'range_km': 8, 'accuracy_m': 0.5, 'frequency_hz': 20000, 'modes': ['bathymetry']},
+            'parametric': {'range_km': 5, 'accuracy_m': 0.2, 'frequency_hz': 100000, 'modes': ['sub_bottom']},
+            'communication': {'range_km': 50, 'accuracy_m': 100, 'frequency_hz': 1000, 'modes': ['data_transfer']},
+        }
+        LIDAR_TYPES = {
+            'terrain': {'range_m': 2000, 'accuracy_m': 0.1, 'points_per_sec': 1000000, 'modes': ['mapping']},
+            'obstacle': {'range_m': 200, 'accuracy_m': 0.01, 'points_per_sec': 100000, 'modes': ['detection']},
+            'atmospheric': {'range_m': 10000, 'accuracy_m': 1, 'points_per_sec': 10000, 'modes': ['wind']},
+            'bathymetric': {'range_m': 50, 'accuracy_m': 0.1, 'points_per_sec': 50000, 'modes': ['underwater']},
+            'flash': {'range_m': 100, 'accuracy_m': 0.05, 'points_per_sec': 500000, 'modes': ['imaging']},
+            'doppler': {'range_m': 500, 'accuracy_m': 0.1, 'points_per_sec': 200000, 'modes': ['velocity']},
+        }
+        ACOUSTIC_TYPES = {
+            'gunshot': {'range_m': 500, 'frequency_hz': 2000, 'detection_accuracy': 0.95, 'modes': ['detection', 'classification', 'localization']},
+            'drone': {'range_m': 300, 'frequency_hz': 5000, 'detection_accuracy': 0.90, 'modes': ['detection', 'classification']},
+            'explosion': {'range_m': 2000, 'frequency_hz': 100, 'detection_accuracy': 0.98, 'modes': ['detection', 'localization']},
+            'vehicle': {'range_m': 1000, 'frequency_hz': 100, 'detection_accuracy': 0.85, 'modes': ['detection', 'classification']},
+            'footstep': {'range_m': 50, 'frequency_hz': 1000, 'detection_accuracy': 0.80, 'modes': ['detection', 'localization']},
+        }
+        EW_TYPES = {
+            'jamming': {'range_km': 50, 'power_w': 1000, 'modes': ['noise', 'deceptive']},
+            'spoofing': {'range_km': 30, 'power_w': 500, 'modes': ['gps', 'radar', 'communication']},
+            'electronic_intelligence': {'range_km': 100, 'power_w': 100, 'modes': ['signal_intelligence']},
+            'communication_jamming': {'range_km': 20, 'power_w': 200, 'modes': ['voice', 'data']},
+        }
+        WEAPONS = {
+            'colt_python': {'type': 'handgun', 'caliber': '.357 Magnum', 'capacity': 6, 'range_m': 50},
+            'glock_43': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 6, 'range_m': 50},
+            'smith_wesson_m_p_40': {'type': 'handgun', 'caliber': '.40 S&W', 'capacity': 15, 'range_m': 50},
+            'sig_sauer_p320': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 17, 'range_m': 50},
+            'hk_vp9': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 15, 'range_m': 50},
+            'beretta_92fs': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 15, 'range_m': 50},
+            'cz_75': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 16, 'range_m': 50},
+            'walther_ppk': {'type': 'handgun', 'caliber': '.380 ACP', 'capacity': 7, 'range_m': 30},
+            'ruger_lcp': {'type': 'handgun', 'caliber': '.380 ACP', 'capacity': 6, 'range_m': 30},
+            'taurus_pt111': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 12, 'range_m': 50},
+            'springfield_xd': {'type': 'handgun', 'caliber': '9x19mm', 'capacity': 16, 'range_m': 50},
+            'fn_fnx_45': {'type': 'handgun', 'caliber': '.45 ACP', 'capacity': 15, 'range_m': 50},
+            'ar_15': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 600},
+            'ak_47': {'type': 'rifle', 'caliber': '7.62x39mm', 'capacity': 30, 'range_m': 400},
+            'm4_carbine': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+            'm16': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 550},
+            'hk416': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 600},
+            'fn_scar': {'type': 'rifle', 'caliber': '7.62x51mm', 'capacity': 20, 'range_m': 700},
+            'sig_mcx': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+            'tavor_x95': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+            'aug_a3': {'type': 'rifle', 'caliber': '5.56x45mm', 'capacity': 30, 'range_m': 500},
+            'galil_ace': {'type': 'rifle', 'caliber': '7.62x39mm', 'capacity': 30, 'range_m': 400},
+            'remington_870': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 6, 'range_m': 50},
+            'mossberg_500': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 6, 'range_m': 50},
+            'benelli_m4': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 5, 'range_m': 50},
+            'beretta_1301': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 7, 'range_m': 50},
+            'kel_tec_ksg': {'type': 'shotgun', 'caliber': '12 gauge', 'capacity': 14, 'range_m': 50},
+            'mp5': {'type': 'smg', 'caliber': '9x19mm', 'capacity': 30, 'range_m': 200},
+            'mp7': {'type': 'smg', 'caliber': '4.6x30mm', 'capacity': 40, 'range_m': 200},
+            'vector': {'type': 'smg', 'caliber': '.45 ACP', 'capacity': 30, 'range_m': 150},
+            'p90': {'type': 'smg', 'caliber': '5.7x28mm', 'capacity': 50, 'range_m': 200},
+            'uzi': {'type': 'smg', 'caliber': '9x19mm', 'capacity': 32, 'range_m': 150},
+            'm249': {'type': 'lmg', 'caliber': '5.56x45mm', 'capacity': 200, 'range_m': 800},
+            'm60': {'type': 'lmg', 'caliber': '7.62x51mm', 'capacity': 100, 'range_m': 800},
+            'pk_m': {'type': 'lmg', 'caliber': '7.62x54mmR', 'capacity': 100, 'range_m': 800},
+            'rpk': {'type': 'lmg', 'capacity': 75, 'caliber': '7.62x39mm', 'range_m': 600},
+            'm40a3': {'type': 'sniper', 'caliber': '7.62x51mm', 'capacity': 5, 'range_m': 1000},
+            'm24': {'type': 'sniper', 'caliber': '7.62x51mm', 'capacity': 5, 'range_m': 1000},
+            'barrett_m82': {'type': 'sniper', 'caliber': '.50 BMG', 'capacity': 10, 'range_m': 2000},
+            'cheytac_m200': {'type': 'sniper', 'caliber': '.408 Cheytac', 'capacity': 7, 'range_m': 2200},
+            'awp': {'type': 'sniper', 'caliber': '.338 Lapua', 'capacity': 5, 'range_m': 1500},
+            'm67_grenade': {'type': 'explosive', 'payload': 'HE', 'blast_radius_m': 15, 'range_m': 40},
+            'rpg_7': {'type': 'explosive', 'payload': 'HEAT', 'blast_radius_m': 5, 'range_m': 300},
+            'c4': {'type': 'explosive', 'payload': 'C4', 'blast_radius_m': 20, 'range_m': 0},
+            'claymore': {'type': 'explosive', 'payload': 'fragmentation', 'blast_radius_m': 50, 'range_m': 50},
+            'ied': {'type': 'explosive', 'payload': 'HE', 'blast_radius_m': 30, 'range_m': 0},
+            'thermite': {'type': 'explosive', 'payload': 'thermite', 'blast_radius_m': 1, 'range_m': 0},
+            'laser_weapon': {'type': 'directed_energy', 'power_kw': 300, 'range_m': 5000, 'cooldown_sec': 10},
+            'microwave_weapon': {'type': 'directed_energy', 'power_kw': 100, 'range_m': 1000, 'cooldown_sec': 30},
+            'plasma_weapon': {'type': 'directed_energy', 'power_kw': 1000, 'range_m': 2000, 'cooldown_sec': 60},
+            'emp': {'type': 'directed_energy', 'power_gv': 100, 'range_m': 500, 'cooldown_sec': 120},
+            'javelin': {'type': 'missile', 'range_km': 2.5, 'speed_mach': 1.5, 'payload_kg': 8.4},
+            'stinger': {'type': 'missile', 'range_km': 8, 'speed_mach': 2.2, 'payload_kg': 3},
+            'hellfire': {'type': 'missile', 'range_km': 8, 'speed_mach': 1.5, 'payload_kg': 9},
+            'tomahawk': {'type': 'missile', 'range_km': 2500, 'speed_mach': 0.8, 'payload_kg': 450},
+            'taser': {'type': 'non_lethal', 'range_m': 10, 'voltage': 50000, 'recharge_sec': 5},
+            'rubber_bullets': {'type': 'non_lethal', 'range_m': 50, 'impact_joules': 100},
+            'water_cannon': {'type': 'non_lethal', 'range_m': 30, 'pressure_psi': 1000},
+            'flashbang': {'type': 'non_lethal', 'range_m': 10, 'lumens': 1000000},
+            'logic_bomb': {'type': 'cyber_kinetic', 'target': 'firmware', 'activation': 'trigger'},
+            'firmware_corruption': {'type': 'cyber_kinetic', 'target': 'embedded_system', 'method': 'malicious_update'},
+        }
+        MARTIAL_ARTS = {
+            'muay_thai': {'type': 'striking', 'origin': 'Thailand', 'techniques': ['punches', 'knees', 'elbows', 'kicks', 'clinching']},
+            'karate': {'type': 'striking', 'origin': 'Japan', 'techniques': ['punches', 'kicks', 'knee_strikes', 'elbow_strikes', 'open_hand']},
+            'taekwondo': {'type': 'striking', 'origin': 'Korea', 'techniques': ['kicks', 'punches', 'blocks']},
+            'boxing': {'type': 'striking', 'origin': 'UK', 'techniques': ['jabs', 'hooks', 'uppercuts', 'footwork']},
+            'kickboxing': {'type': 'striking', 'origin': 'Japan/USA', 'techniques': ['punches', 'kicks', 'knees']},
+            'savate': {'type': 'striking', 'origin': 'France', 'techniques': ['punches', 'kicks']},
+            'sanda': {'type': 'striking', 'origin': 'China', 'techniques': ['punches', 'kicks', 'throws']},
+            'bjj': {'type': 'grappling', 'origin': 'Brazil', 'techniques': ['submissions', 'positioning', 'ground_work']},
+            'judo': {'type': 'grappling', 'origin': 'Japan', 'techniques': ['throws', 'joint_locks', 'pins']},
+            'wrestling': {'type': 'grappling', 'origin': 'Global', 'techniques': ['takedowns', 'pins', 'escapes']},
+            'sambo': {'type': 'grappling', 'origin': 'Russia', 'techniques': ['throws', 'submissions', 'ground_work']},
+            'catch_wrestling': {'type': 'grappling', 'origin': 'UK/USA', 'techniques': ['submissions', 'pins', 'takedowns']},
+            'wing_chun': {'type': 'traditional', 'origin': 'China', 'techniques': ['striking', 'trapping', 'close_combat']},
+            'kung_fu': {'type': 'traditional', 'origin': 'China', 'techniques': ['striking', 'kicks', 'blocks']},
+            'aikido': {'type': 'traditional', 'origin': 'Japan', 'techniques': ['joint_locks', 'throws', 'blending']},
+            'hapkido': {'type': 'traditional', 'origin': 'Korea', 'techniques': ['joint_locks', 'strikes', 'throws']},
+            'krav_maga': {'type': 'traditional', 'origin': 'Israel', 'techniques': ['strikes', 'defenses', 'counter_attacks']},
+            'ninjutsu': {'type': 'traditional', 'origin': 'Japan', 'techniques': ['stealth', 'espionage', 'assassination']},
+            'kali': {'type': 'weapons', 'origin': 'Philippines', 'techniques': ['knife_fighting', 'stick_fighting']},
+            'escrima': {'type': 'weapons', 'origin': 'Philippines', 'techniques': ['stick', 'knife', 'empty_hand']},
+            'kendo': {'type': 'weapons', 'origin': 'Japan', 'techniques': ['swordsmanship']},
+            'fencing': {'type': 'weapons', 'origin': 'Europe', 'techniques': ['foil', 'epee', 'saber']},
+            'iaido': {'type': 'weapons', 'origin': 'Japan', 'techniques': ['sword_drawing', 'cutting']},
+            'mma': {'type': 'hybrid', 'origin': 'Global', 'techniques': ['striking', 'grappling', 'submissions']},
+            'jeet_kune_do': {'type': 'hybrid', 'origin': 'USA', 'techniques': ['striking', 'trapping', 'grappling']},
+        }
+
+        class SensorCommand(BaseModel):
+            sensor_type: str
+            mode: str
+            params: dict = {}
+
+        class WeaponCommand(BaseModel):
+            weapon: str
+            target: str
+            fire: bool = False
+
+        @app.post('/sensors/radar')
+        async def radar(cmd: SensorCommand):
+            if cmd.sensor_type not in RADAR_TYPES:
+                return {'error': 'Unknown radar type'}
+            return {'status': 'radar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+                    'data': {'contacts': random.randint(0, 20), 'range': random.randint(1, 100), 'bearing': random.randint(0, 360)}}
+
+        @app.post('/sensors/sonar')
+        async def sonar(cmd: SensorCommand):
+            if cmd.sensor_type not in SONAR_TYPES:
+                return {'error': 'Unknown sonar type'}
+            return {'status': 'sonar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+                    'data': {'contacts': random.randint(0, 10), 'depth': random.randint(1, 1000), 'bearing': random.randint(0, 360)}}
+
+        @app.post('/sensors/lidar')
+        async def lidar(cmd: SensorCommand):
+            if cmd.sensor_type not in LIDAR_TYPES:
+                return {'error': 'Unknown LiDAR type'}
+            return {'status': 'lidar_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+                    'data': {'points': random.randint(1000, 100000), 'range': random.randint(1, 2000), 'resolution': round(random.uniform(0.01, 1), 3)}}
+
+        @app.post('/sensors/acoustic')
+        async def acoustic(cmd: SensorCommand):
+            if cmd.sensor_type not in ACOUSTIC_TYPES:
+                return {'error': 'Unknown acoustic type'}
+            return {'status': 'acoustic_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+                    'data': {'detections': random.randint(0, 5), 'confidence': round(random.uniform(0.7, 0.99), 2), 'range': random.randint(1, 500)}}
+
+        @app.post('/sensors/ew')
+        async def ew(cmd: SensorCommand):
+            if cmd.sensor_type not in EW_TYPES:
+                return {'error': 'Unknown EW type'}
+            return {'status': 'ew_active', 'type': cmd.sensor_type, 'mode': cmd.mode,
+                    'data': {'targets_affected': random.randint(0, 10), 'effective_range': random.randint(1, 100)}}
+
+        @app.post('/weapons/fire')
+        async def fire_weapon(cmd: WeaponCommand):
+            if cmd.weapon not in WEAPONS:
+                return {'error': 'Unknown weapon'}
+            weapon = WEAPONS[cmd.weapon]
+            if cmd.fire:
+                return {'status': 'fired', 'weapon': cmd.weapon, 'target': cmd.target, 'specs': weapon, 'timestamp': 'now'}
+            return {'status': 'armed', 'weapon': cmd.weapon, 'specs': weapon}
+
+        @app.get('/weapons')
+        async def list_weapons():
+            return {'weapons': list(WEAPONS.keys())}
+
+        @app.get('/weapons/{weapon}')
+        async def get_weapon(weapon: str):
+            if weapon not in WEAPONS:
+                return {'error': 'Weapon not found'}
+            return WEAPONS[weapon]
+
+        @app.get('/martial_arts')
+        async def list_martial_arts():
+            return {'styles': list(MARTIAL_ARTS.keys())}
+
+        @app.get('/martial_arts/{style}')
+        async def get_martial_art(style: str):
+            if style not in MARTIAL_ARTS:
+                return {'error': 'Style not found'}
+            return MARTIAL_ARTS[style]
+
+        @app.get('/sensors/radar/types')
+        async def list_radar():
+            return {'types': list(RADAR_TYPES.keys())}
+
+        @app.get('/sensors/sonar/types')
+        async def list_sonar():
+            return {'types': list(SONAR_TYPES.keys())}
+
+        @app.get('/sensors/lidar/types')
+        async def list_lidar():
+            return {'types': list(LIDAR_TYPES.keys())}
+
+        @app.get('/sensors/acoustic/types')
+        async def list_acoustic():
+            return {'types': list(ACOUSTIC_TYPES.keys())}
+
+        @app.get('/sensors/ew/types')
+        async def list_ew():
+            return {'types': list(EW_TYPES.keys())}
+
+        if __name__ == '__main__':
+            uvicorn.run(app, host='0.0.0.0', port=9901)
+        SENSORS_EOF
+        python /app/sensors_orchestrator.py"
+    ports:
+      - "9901:9901"
+    deploy:
+      replicas: 0
+    profiles:
+      - sensors
+    networks:
+      - sensors-net
+networks:
+  sensors-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.33.0.0/16

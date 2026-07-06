@@ -1,0 +1,1176 @@
+services:
+  zt-gateway-defensive:
+    image: alpine:latest
+    container_name: babirye-zt-gateway-defensive
+    restart: "no"
+    networks:
+      - defensive-net
+    command: >
+      sh -c "
+        apk add --no-cache python3 py3-pip curl bash jq && pip3 install fastapi uvicorn pydantic &&
+        cat > /app/gateway.py << 'GWEOF'
+        import os, hmac, hashlib, time, json, subprocess
+        from fastapi import FastAPI, HTTPException; from pydantic import BaseModel; import uvicorn
+        SECRET = os.getenv('DEFENSIVE_SECRET', 'CHANGE_ME'); PASSWORD = os.getenv('DEFENSIVE_PASSWORD', 'CHANGE_ME')
+        ACTIVE = False; DEPLOYED = []; app = FastAPI()
+        class SPAPacket(BaseModel):
+            timestamp: int; nonce: str; signature: str; action: str; service: str = None; params: dict = {}
+        def verify_spa(p):
+            if abs(time.time() - p.timestamp) > 300: return False
+            msg = f'{p.timestamp}:{p.nonce}:{p.action}:{p.service or ""}:{json.dumps(p.params, separators=(",",":"), sort_keys=True)}'
+            expected = hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+            return hmac.compare_digest(expected, p.signature)
+        @app.post('/spa/activate')
+        async def activate(p: SPAPacket):
+            global ACTIVE
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = True; return {'status': 'activated'}
+        @app.post('/spa/deactivate')
+        async def deactivate(p: SPAPacket):
+            global ACTIVE, DEPLOYED
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = False
+            for s in DEPLOYED:
+                subprocess.run(['docker','compose','-f','/app/docker-compose.defensive.yml','--profile','defensive','stop',s])
+                subprocess.run(['docker','compose','-f','/app/docker-compose.defensive.yml','--profile','defensive','rm','-f',s])
+            DEPLOYED = []; return {'status': 'deactivated'}
+        @app.post('/spa/deploy')
+        async def deploy(p: SPAPacket):
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            if not ACTIVE: raise HTTPException(403, 'defensive arsenal dormant')
+            if not p.service: raise HTTPException(400, 'Service required')
+            result = subprocess.run(['docker','compose','-f','/app/docker-compose.defensive.yml','--profile','defensive','up','-d',p.service], capture_output=True)
+            if result.returncode == 0: DEPLOYED.append(p.service); return {'status':'deployed','service':p.service}
+            return {'status':'failed','error':result.stderr}
+        @app.get('/spa/status')
+        async def status(): return {'active': ACTIVE, 'deployed': DEPLOYED}
+        @app.get('/spa/services')
+        async def services(): return {'services': ["snort","suricata","zeek","wazuh-server","ossec-server","fail2ban","crowdsec","securityonion","moloch","arkime","sagan","greenbone","openvas-scanner","ntopng","velociraptor","graylog","elk-stack","splunk-free","alerta","canarytokens","honeytrap","cowrie","dionaea","clamav","rkhunter","chkrootkit","lynis","osquery","sysmon","falco","auditd","aide","tripwire","samhain","yara","sigma","stix-validator","mitre-attack","opencti","misp","crits","vulnwhisperer","wazuh-agent","ossec-agent","grr","osdvm","modsecurity","coraza-waf","openresty","oauth2-proxy","keycloak","dex-idp","pomerium","traefik","envoy","vault","consul-template","cert-manager","step-ca","spire","opa","kyverno","trivy","checkov","tfsec","kubesec","kube-bench","kube-hunter","dockle","clair","grype","duo-auth","privacyidea","authelia","kanidm","lldap","fusionauth","authentik","supertokens","logto","minio","restic","borgbackup","sops","age-encryption","gpg","wireguard","tailscale","nebula","headscale","firezone","cloudflared","pihole","adguard-home","def-extra-95","def-extra-96","def-extra-97","def-extra-98","def-extra-99","def-extra-100"]}
+        if __name__ == '__main__': uvicorn.run(app, host='0.0.0.0', port=4749)
+        GWEOF
+        python3 /app/gateway.py
+      "
+    environment:
+      - DEFENSIVE_SECRET=${DEFENSIVE_SECRET:-CHANGE_ME}
+      - DEFENSIVE_PASSWORD=${DEFENSIVE_PASSWORD:-CHANGE_ME}
+    ports:
+      - "4749:4749"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.defensive.yml:/app/docker-compose.defensive.yml
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - defensive-net
+
+  snort:
+    image: ciscosecurity/snort
+    container_name: babirye-snort
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  suricata:
+    image: jasonish/suricata
+    container_name: babirye-suricata
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  zeek:
+    image: zeek/zeek
+    container_name: babirye-zeek
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  wazuh-server:
+    image: wazuh/wazuh
+    container_name: babirye-wazuh-server
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  ossec-server:
+    image: ossec/ossec-hids
+    container_name: babirye-ossec-server
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  fail2ban:
+    image: fail2ban/fail2ban
+    container_name: babirye-fail2ban
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: babirye-crowdsec
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  securityonion:
+    image: securityonion/sostatus
+    container_name: babirye-securityonion
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  moloch:
+    image: molochar/molochar
+    container_name: babirye-moloch
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  arkime:
+    image: arkime/arkime
+    container_name: babirye-arkime
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  sagan:
+    image: saganrulez/sagan
+    container_name: babirye-sagan
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  greenbone:
+    image: greenbone/greenbone-vulnerability-manager
+    container_name: babirye-greenbone
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  openvas-scanner:
+    image: greenbone/openvas-scanner
+    container_name: babirye-openvas-scanner
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  ntopng:
+    image: ntop/ntopng
+    container_name: babirye-ntopng
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  velociraptor:
+    image: velocidex/velociraptor
+    container_name: babirye-velociraptor
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  graylog:
+    image: graylog/graylog
+    container_name: babirye-graylog
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  elk-stack:
+    image: elasticsearch:8.12.0
+    container_name: babirye-elk-stack
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  splunk-free:
+    image: splunk/splunk
+    container_name: babirye-splunk-free
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  alerta:
+    image: alerta/alerta
+    container_name: babirye-alerta
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  canarytokens:
+    image: thinkst/canarytokens
+    container_name: babirye-canarytokens
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  honeytrap:
+    image: honeytrap/honeytrap
+    container_name: babirye-honeytrap
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  cowrie:
+    image: cowrie/cowrie
+    container_name: babirye-cowrie
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  dionaea:
+    image: dionaea/dionaea
+    container_name: babirye-dionaea
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  clamav:
+    image: clamav/clamav
+    container_name: babirye-clamav
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  rkhunter:
+    image: rkhunter/rkhunter
+    container_name: babirye-rkhunter
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  chkrootkit:
+    image: chkrootkit/chkrootkit
+    container_name: babirye-chkrootkit
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  lynis:
+    image: cisofy/lynis
+    container_name: babirye-lynis
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  osquery:
+    image: osquery/osquery
+    container_name: babirye-osquery
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  sysmon:
+    image: florianbezdeka/sysmon
+    container_name: babirye-sysmon
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  falco:
+    image: falcosecurity/falco
+    container_name: babirye-falco
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  auditd:
+    image: python:3.11-slim
+    container_name: babirye-auditd
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  aide:
+    image: aide/aide
+    container_name: babirye-aide
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  tripwire:
+    image: tripwire/tripwire
+    container_name: babirye-tripwire
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  samhain:
+    image: samhain/samhain
+    container_name: babirye-samhain
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  yara:
+    image: virustotal/yara
+    container_name: babirye-yara
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  sigma:
+    image: sigmahq/sigma
+    container_name: babirye-sigma
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  stix-validator:
+    image: oasis-tcs/stix-validator
+    container_name: babirye-stix-validator
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  mitre-attack:
+    image: mitre/attack-navigator
+    container_name: babirye-mitre-attack
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  opencti:
+    image: opencti/opencti
+    container_name: babirye-opencti
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  misp:
+    image: misp/misp
+    container_name: babirye-misp
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  crits:
+    image: crits/crits
+    container_name: babirye-crits
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  vulnwhisperer:
+    image: vulnwhisperer/vulnwhisperer
+    container_name: babirye-vulnwhisperer
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  wazuh-agent:
+    image: wazuh/wazuh-agent
+    container_name: babirye-wazuh-agent
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  ossec-agent:
+    image: ossec/ossec-agent
+    container_name: babirye-ossec-agent
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  grr:
+    image: google/grr
+    container_name: babirye-grr
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  osdvm:
+    image: osdvm/osdvm
+    container_name: babirye-osdvm
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  modsecurity:
+    image: owasp/modsecurity-crs
+    container_name: babirye-modsecurity
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  coraza-waf:
+    image: corazawaf/coraza
+    container_name: babirye-coraza-waf
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  openresty:
+    image: openresty/openresty
+    container_name: babirye-openresty
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  oauth2-proxy:
+    image: oauth2-proxy/oauth2-proxy
+    container_name: babirye-oauth2-proxy
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  keycloak:
+    image: keycloak/keycloak
+    container_name: babirye-keycloak
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  dex-idp:
+    image: dexidp/dex
+    container_name: babirye-dex-idp
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  pomerium:
+    image: pomerium/pomerium
+    container_name: babirye-pomerium
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  traefik:
+    image: traefik/traefik
+    container_name: babirye-traefik
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  envoy:
+    image: envoyproxy/envoy
+    container_name: babirye-envoy
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  vault:
+    image: hashicorp/vault
+    container_name: babirye-vault
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  consul-template:
+    image: hashicorp/consul-template
+    container_name: babirye-consul-template
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  cert-manager:
+    image: jetstack/cert-manager
+    container_name: babirye-cert-manager
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  step-ca:
+    image: smallstep/step-ca
+    container_name: babirye-step-ca
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  spire:
+    image: spiffe/spire
+    container_name: babirye-spire
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  opa:
+    image: openpolicyagent/opa
+    container_name: babirye-opa
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  kyverno:
+    image: kyverno/kyverno
+    container_name: babirye-kyverno
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  trivy:
+    image: aquasecurity/trivy
+    container_name: babirye-trivy
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  checkov:
+    image: bridgecrewio/checkov
+    container_name: babirye-checkov
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  tfsec:
+    image: aquasecurity/tfsec
+    container_name: babirye-tfsec
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  kubesec:
+    image: controlplane/kubesec
+    container_name: babirye-kubesec
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  kube-bench:
+    image: aquasecurity/kube-bench
+    container_name: babirye-kube-bench
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  kube-hunter:
+    image: aquasecurity/kube-hunter
+    container_name: babirye-kube-hunter
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  dockle:
+    image: goodwithtech/dockle
+    container_name: babirye-dockle
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  clair:
+    image: quay/clair
+    container_name: babirye-clair
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  grype:
+    image: anchore/grype
+    container_name: babirye-grype
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  duo-auth:
+    image: duosecurity/duoauthproxy
+    container_name: babirye-duo-auth
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  privacyidea:
+    image: privacyidea/privacyidea
+    container_name: babirye-privacyidea
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  authelia:
+    image: authelia/authelia
+    container_name: babirye-authelia
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  kanidm:
+    image: kanidm/kanidm
+    container_name: babirye-kanidm
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  lldap:
+    image: lldap/lldap
+    container_name: babirye-lldap
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  fusionauth:
+    image: fusionauth/fusionauth
+    container_name: babirye-fusionauth
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  authentik:
+    image: goauthentik/authentik
+    container_name: babirye-authentik
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  supertokens:
+    image: supertokens/supertokens-core
+    container_name: babirye-supertokens
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  logto:
+    image: logto-io/logto
+    container_name: babirye-logto
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  minio:
+    image: minio/minio
+    container_name: babirye-minio
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  restic:
+    image: restic/restic
+    container_name: babirye-restic
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  borgbackup:
+    image: borgbackup/borgbackup
+    container_name: babirye-borgbackup
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  sops:
+    image: mozilla/sops
+    container_name: babirye-sops
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  age-encryption:
+    image: str4d/age
+    container_name: babirye-age-encryption
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  gpg:
+    image: str4d/gpg
+    container_name: babirye-gpg
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  wireguard:
+    image: linuxserver/wireguard
+    container_name: babirye-wireguard
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  tailscale:
+    image: tailscale/tailscale
+    container_name: babirye-tailscale
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  nebula:
+    image: nebula-os/nebula
+    container_name: babirye-nebula
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  headscale:
+    image: headscale/headscale
+    container_name: babirye-headscale
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  firezone:
+    image: firezone/firezone
+    container_name: babirye-firezone
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  cloudflared:
+    image: cloudflare/cloudflared
+    container_name: babirye-cloudflared
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  pihole:
+    image: pihole/pihole
+    container_name: babirye-pihole
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  adguard-home:
+    image: adguard/adguard-home
+    container_name: babirye-adguard-home
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-95:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-95
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-96:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-96
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-97:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-97
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-98:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-98
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-99:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-99
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+  def-extra-100:
+    image: python:3.11-slim
+    container_name: babirye-def-extra-100
+    restart: "no"
+    networks:
+      - defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - defensive
+
+networks:
+  defensive-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.32.0.0/16

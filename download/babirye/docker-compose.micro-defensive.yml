@@ -1,0 +1,1726 @@
+services:
+  zt-gateway-micro_defensive:
+    image: alpine:latest
+    container_name: babirye-zt-gateway-micro_defensive
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    command: >
+      sh -c "
+        apk add --no-cache python3 py3-pip curl bash jq && pip3 install fastapi uvicorn pydantic &&
+        cat > /app/gateway.py << 'GWEOF'
+        import os, hmac, hashlib, time, json, subprocess
+        from fastapi import FastAPI, HTTPException; from pydantic import BaseModel; import uvicorn
+        SECRET = os.getenv('MICRO_DEFENSIVE_SECRET', 'CHANGE_ME'); PASSWORD = os.getenv('MICRO_DEFENSIVE_PASSWORD', 'CHANGE_ME')
+        ACTIVE = False; DEPLOYED = []; app = FastAPI()
+        class SPAPacket(BaseModel):
+            timestamp: int; nonce: str; signature: str; action: str; service: str = None; params: dict = {}
+        def verify_spa(p):
+            if abs(time.time() - p.timestamp) > 300: return False
+            msg = f'{p.timestamp}:{p.nonce}:{p.action}:{p.service or ""}:{json.dumps(p.params, separators=(",",":"), sort_keys=True)}'
+            expected = hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+            return hmac.compare_digest(expected, p.signature)
+        @app.post('/spa/activate')
+        async def activate(p: SPAPacket):
+            global ACTIVE
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = True; return {'status': 'activated'}
+        @app.post('/spa/deactivate')
+        async def deactivate(p: SPAPacket):
+            global ACTIVE, DEPLOYED
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = False
+            for s in DEPLOYED:
+                subprocess.run(['docker','compose','-f','/app/docker-compose.micro-defensive.yml','--profile','micro_defensive','stop',s])
+                subprocess.run(['docker','compose','-f','/app/docker-compose.micro-defensive.yml','--profile','micro_defensive','rm','-f',s])
+            DEPLOYED = []; return {'status': 'deactivated'}
+        @app.post('/spa/deploy')
+        async def deploy(p: SPAPacket):
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            if not ACTIVE: raise HTTPException(403, 'micro_defensive arsenal dormant')
+            if not p.service: raise HTTPException(400, 'Service required')
+            result = subprocess.run(['docker','compose','-f','/app/docker-compose.micro-defensive.yml','--profile','micro_defensive','up','-d',p.service], capture_output=True)
+            if result.returncode == 0: DEPLOYED.append(p.service); return {'status':'deployed','service':p.service}
+            return {'status':'failed','error':result.stderr}
+        @app.get('/spa/status')
+        async def status(): return {'active': ACTIVE, 'deployed': DEPLOYED}
+        @app.get('/spa/services')
+        async def services(): return {'services': ["html-sanitizer","sql-sanitizer","xss-filter","cmd-injection-guard","path-traversal-guard","ldap-injection-guard","xml-sanitizer","header-injection-guard","crlf-injection-guard","ssti-guard","jwt-validator","csp-enforcer","cors-guard","rate-limiter","brute-force-guard","csrf-guard","idempotency-guard","payload-size-guard","schema-validator","regex-validator","file-hash-monitor","config-drift-detector","process-monitor","network-flow-monitor","dns-monitor","certificate-monitor","user-activity-monitor","priv-esc-monitor","login-anomaly-detector","file-access-monitor","registry-monitor","service-monitor","port-monitor","cron-monitor","kernel-module-monitor","docker-event-monitor","api-call-auditor","session-monitor","resource-quota-guard","temp-file-cleaner","key-rotator","tls-config-checker","secret-scanner","env-validator","password-policy-enforcer","token-revoker","cert-pinner","hmac-timestamp-guard","nonce-tracker","encryption-at-rest-check","key-derivation-checker","randomness-quality-checker","hash-algorithm-checker","pem-parser","ocsp-responder","crl-checker","key-usage-enforcer","vault-health-check","crypto-benchmark","seed-phrase-validator","port-scan-detector","syn-flood-guard","arp-spoof-detector","dns-hijack-guard","rogue-ap-detector","mac-flood-guard","vlan-hopping-guard","icmp-tunnel-detector","dns-tunnel-detector","http-tunnel-detector","ssh-brute-guard","rdp-guard","smb-guard","ftp-guard","smtp-guard","ip-reputation-checker","geoip-guard","tor-exit-guard","vpn-detector","bot-detection","container-escape-guard","privileged-container-detector","image-vuln-scanner-micro","secret-in-image-scanner","network-policy-validator","rbac-auditor","pod-security-checker","service-account-auditor","ingress-scanner","configmap-secret-checker","cloudtrail-monitor","s3-bucket-scanner","iam-auditor","sg-auditor","vpc-flow-analyzer","ec2-metadata-guard","lambda-permission-checker","secrets-manager-auditor","kms-key-rotator","cloud-config-auditor","self-injection-guard","self-exfiltration-guard","self-privilege-guard","self-modification-guard","self-comm-guard","self-dos-guard","self-resource-guard","self-memory-guard","self-config-guard","self-credential-guard","self-deserialization-guard","self-path-guard","self-race-guard","self-timebomb-guard","self-backdoor-guard","self-crypto-guard","self-log-guard","self-depconfusion-guard","self-prototype-guard","self-replay-guard","self-supply-chain-guard","self-encoding-bypass-guard","self-unicode-bypass-guard","self-model-extraction-guard","self-adversarial-guard","behavioral-baseline","anomaly-scoring-engine","threat-intel-enricher","ioc-matcher","yara-rules-engine","sigma-rules-engine","mitre-mapping-engine","kill-chain-analyzer","diamond-model-analyzer","attack-graph-generator","risk-scoring-engine","vuln-prioritizer","patch-priority-engine","compliance-checker","incident-timer","evidence-chain-validator","timeline-reconstructor","malware-triage","phishing-detector","deepfake-detector","social-eng-guard","insider-threat-detector","data-exfil-detector","lateral-movement-detector","persistence-detector"]}
+        if __name__ == '__main__': uvicorn.run(app, host='0.0.0.0', port=4750)
+        GWEOF
+        python3 /app/gateway.py
+      "
+    environment:
+      - MICRO_DEFENSIVE_SECRET=${MICRO_DEFENSIVE_SECRET:-CHANGE_ME}
+      - MICRO_DEFENSIVE_PASSWORD=${MICRO_DEFENSIVE_PASSWORD:-CHANGE_ME}
+    ports:
+      - "4750:4750"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.micro-defensive.yml:/app/docker-compose.micro-defensive.yml
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - micro-defensive-net
+
+  html-sanitizer:
+    image: python:3.11-slim
+    container_name: babirye-html-sanitizer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  sql-sanitizer:
+    image: python:3.11-slim
+    container_name: babirye-sql-sanitizer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  xss-filter:
+    image: python:3.11-slim
+    container_name: babirye-xss-filter
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cmd-injection-guard:
+    image: python:3.11-slim
+    container_name: babirye-cmd-injection-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  path-traversal-guard:
+    image: python:3.11-slim
+    container_name: babirye-path-traversal-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ldap-injection-guard:
+    image: python:3.11-slim
+    container_name: babirye-ldap-injection-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  xml-sanitizer:
+    image: python:3.11-slim
+    container_name: babirye-xml-sanitizer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  header-injection-guard:
+    image: python:3.11-slim
+    container_name: babirye-header-injection-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  crlf-injection-guard:
+    image: python:3.11-slim
+    container_name: babirye-crlf-injection-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ssti-guard:
+    image: python:3.11-slim
+    container_name: babirye-ssti-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  jwt-validator:
+    image: python:3.11-slim
+    container_name: babirye-jwt-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  csp-enforcer:
+    image: python:3.11-slim
+    container_name: babirye-csp-enforcer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cors-guard:
+    image: python:3.11-slim
+    container_name: babirye-cors-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  rate-limiter:
+    image: python:3.11-slim
+    container_name: babirye-rate-limiter
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  brute-force-guard:
+    image: python:3.11-slim
+    container_name: babirye-brute-force-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  csrf-guard:
+    image: python:3.11-slim
+    container_name: babirye-csrf-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  idempotency-guard:
+    image: python:3.11-slim
+    container_name: babirye-idempotency-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  payload-size-guard:
+    image: python:3.11-slim
+    container_name: babirye-payload-size-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  schema-validator:
+    image: python:3.11-slim
+    container_name: babirye-schema-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  regex-validator:
+    image: python:3.11-slim
+    container_name: babirye-regex-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  file-hash-monitor:
+    image: python:3.11-slim
+    container_name: babirye-file-hash-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  config-drift-detector:
+    image: python:3.11-slim
+    container_name: babirye-config-drift-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  process-monitor:
+    image: python:3.11-slim
+    container_name: babirye-process-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  network-flow-monitor:
+    image: python:3.11-slim
+    container_name: babirye-network-flow-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  dns-monitor:
+    image: python:3.11-slim
+    container_name: babirye-dns-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  certificate-monitor:
+    image: python:3.11-slim
+    container_name: babirye-certificate-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  user-activity-monitor:
+    image: python:3.11-slim
+    container_name: babirye-user-activity-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  priv-esc-monitor:
+    image: python:3.11-slim
+    container_name: babirye-priv-esc-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  login-anomaly-detector:
+    image: python:3.11-slim
+    container_name: babirye-login-anomaly-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  file-access-monitor:
+    image: python:3.11-slim
+    container_name: babirye-file-access-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  registry-monitor:
+    image: python:3.11-slim
+    container_name: babirye-registry-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  service-monitor:
+    image: python:3.11-slim
+    container_name: babirye-service-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  port-monitor:
+    image: python:3.11-slim
+    container_name: babirye-port-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cron-monitor:
+    image: python:3.11-slim
+    container_name: babirye-cron-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  kernel-module-monitor:
+    image: python:3.11-slim
+    container_name: babirye-kernel-module-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  docker-event-monitor:
+    image: python:3.11-slim
+    container_name: babirye-docker-event-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  api-call-auditor:
+    image: python:3.11-slim
+    container_name: babirye-api-call-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  session-monitor:
+    image: python:3.11-slim
+    container_name: babirye-session-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  resource-quota-guard:
+    image: python:3.11-slim
+    container_name: babirye-resource-quota-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  temp-file-cleaner:
+    image: python:3.11-slim
+    container_name: babirye-temp-file-cleaner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  key-rotator:
+    image: python:3.11-slim
+    container_name: babirye-key-rotator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  tls-config-checker:
+    image: python:3.11-slim
+    container_name: babirye-tls-config-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  secret-scanner:
+    image: python:3.11-slim
+    container_name: babirye-secret-scanner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  env-validator:
+    image: python:3.11-slim
+    container_name: babirye-env-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  password-policy-enforcer:
+    image: python:3.11-slim
+    container_name: babirye-password-policy-enforcer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  token-revoker:
+    image: python:3.11-slim
+    container_name: babirye-token-revoker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cert-pinner:
+    image: python:3.11-slim
+    container_name: babirye-cert-pinner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  hmac-timestamp-guard:
+    image: python:3.11-slim
+    container_name: babirye-hmac-timestamp-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  nonce-tracker:
+    image: python:3.11-slim
+    container_name: babirye-nonce-tracker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  encryption-at-rest-check:
+    image: python:3.11-slim
+    container_name: babirye-encryption-at-rest-check
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  key-derivation-checker:
+    image: python:3.11-slim
+    container_name: babirye-key-derivation-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  randomness-quality-checker:
+    image: python:3.11-slim
+    container_name: babirye-randomness-quality-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  hash-algorithm-checker:
+    image: python:3.11-slim
+    container_name: babirye-hash-algorithm-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  pem-parser:
+    image: python:3.11-slim
+    container_name: babirye-pem-parser
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ocsp-responder:
+    image: python:3.11-slim
+    container_name: babirye-ocsp-responder
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  crl-checker:
+    image: python:3.11-slim
+    container_name: babirye-crl-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  key-usage-enforcer:
+    image: python:3.11-slim
+    container_name: babirye-key-usage-enforcer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  vault-health-check:
+    image: python:3.11-slim
+    container_name: babirye-vault-health-check
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  crypto-benchmark:
+    image: python:3.11-slim
+    container_name: babirye-crypto-benchmark
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  seed-phrase-validator:
+    image: python:3.11-slim
+    container_name: babirye-seed-phrase-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  port-scan-detector:
+    image: python:3.11-slim
+    container_name: babirye-port-scan-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  syn-flood-guard:
+    image: python:3.11-slim
+    container_name: babirye-syn-flood-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  arp-spoof-detector:
+    image: python:3.11-slim
+    container_name: babirye-arp-spoof-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  dns-hijack-guard:
+    image: python:3.11-slim
+    container_name: babirye-dns-hijack-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  rogue-ap-detector:
+    image: python:3.11-slim
+    container_name: babirye-rogue-ap-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  mac-flood-guard:
+    image: python:3.11-slim
+    container_name: babirye-mac-flood-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  vlan-hopping-guard:
+    image: python:3.11-slim
+    container_name: babirye-vlan-hopping-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  icmp-tunnel-detector:
+    image: python:3.11-slim
+    container_name: babirye-icmp-tunnel-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  dns-tunnel-detector:
+    image: python:3.11-slim
+    container_name: babirye-dns-tunnel-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  http-tunnel-detector:
+    image: python:3.11-slim
+    container_name: babirye-http-tunnel-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ssh-brute-guard:
+    image: python:3.11-slim
+    container_name: babirye-ssh-brute-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  rdp-guard:
+    image: python:3.11-slim
+    container_name: babirye-rdp-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  smb-guard:
+    image: python:3.11-slim
+    container_name: babirye-smb-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ftp-guard:
+    image: python:3.11-slim
+    container_name: babirye-ftp-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  smtp-guard:
+    image: python:3.11-slim
+    container_name: babirye-smtp-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ip-reputation-checker:
+    image: python:3.11-slim
+    container_name: babirye-ip-reputation-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  geoip-guard:
+    image: python:3.11-slim
+    container_name: babirye-geoip-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  tor-exit-guard:
+    image: python:3.11-slim
+    container_name: babirye-tor-exit-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  vpn-detector:
+    image: python:3.11-slim
+    container_name: babirye-vpn-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  bot-detection:
+    image: python:3.11-slim
+    container_name: babirye-bot-detection
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  container-escape-guard:
+    image: python:3.11-slim
+    container_name: babirye-container-escape-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  privileged-container-detector:
+    image: python:3.11-slim
+    container_name: babirye-privileged-container-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  image-vuln-scanner-micro:
+    image: python:3.11-slim
+    container_name: babirye-image-vuln-scanner-micro
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  secret-in-image-scanner:
+    image: python:3.11-slim
+    container_name: babirye-secret-in-image-scanner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  network-policy-validator:
+    image: python:3.11-slim
+    container_name: babirye-network-policy-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  rbac-auditor:
+    image: python:3.11-slim
+    container_name: babirye-rbac-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  pod-security-checker:
+    image: python:3.11-slim
+    container_name: babirye-pod-security-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  service-account-auditor:
+    image: python:3.11-slim
+    container_name: babirye-service-account-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ingress-scanner:
+    image: python:3.11-slim
+    container_name: babirye-ingress-scanner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  configmap-secret-checker:
+    image: python:3.11-slim
+    container_name: babirye-configmap-secret-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cloudtrail-monitor:
+    image: python:3.11-slim
+    container_name: babirye-cloudtrail-monitor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  s3-bucket-scanner:
+    image: python:3.11-slim
+    container_name: babirye-s3-bucket-scanner
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  iam-auditor:
+    image: python:3.11-slim
+    container_name: babirye-iam-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  sg-auditor:
+    image: python:3.11-slim
+    container_name: babirye-sg-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  vpc-flow-analyzer:
+    image: python:3.11-slim
+    container_name: babirye-vpc-flow-analyzer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ec2-metadata-guard:
+    image: python:3.11-slim
+    container_name: babirye-ec2-metadata-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  lambda-permission-checker:
+    image: python:3.11-slim
+    container_name: babirye-lambda-permission-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  secrets-manager-auditor:
+    image: python:3.11-slim
+    container_name: babirye-secrets-manager-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  kms-key-rotator:
+    image: python:3.11-slim
+    container_name: babirye-kms-key-rotator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  cloud-config-auditor:
+    image: python:3.11-slim
+    container_name: babirye-cloud-config-auditor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-injection-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-injection-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-exfiltration-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-exfiltration-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-privilege-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-privilege-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-modification-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-modification-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-comm-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-comm-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-dos-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-dos-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-resource-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-resource-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-memory-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-memory-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-config-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-config-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-credential-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-credential-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-deserialization-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-deserialization-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-path-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-path-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-race-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-race-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-timebomb-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-timebomb-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-backdoor-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-backdoor-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-crypto-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-crypto-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-log-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-log-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-depconfusion-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-depconfusion-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-prototype-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-prototype-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-replay-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-replay-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-supply-chain-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-supply-chain-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-encoding-bypass-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-encoding-bypass-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-unicode-bypass-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-unicode-bypass-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-model-extraction-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-model-extraction-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  self-adversarial-guard:
+    image: python:3.11-slim
+    container_name: babirye-self-adversarial-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  behavioral-baseline:
+    image: python:3.11-slim
+    container_name: babirye-behavioral-baseline
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  anomaly-scoring-engine:
+    image: python:3.11-slim
+    container_name: babirye-anomaly-scoring-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  threat-intel-enricher:
+    image: python:3.11-slim
+    container_name: babirye-threat-intel-enricher
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  ioc-matcher:
+    image: python:3.11-slim
+    container_name: babirye-ioc-matcher
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  yara-rules-engine:
+    image: python:3.11-slim
+    container_name: babirye-yara-rules-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  sigma-rules-engine:
+    image: python:3.11-slim
+    container_name: babirye-sigma-rules-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  mitre-mapping-engine:
+    image: python:3.11-slim
+    container_name: babirye-mitre-mapping-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  kill-chain-analyzer:
+    image: python:3.11-slim
+    container_name: babirye-kill-chain-analyzer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  diamond-model-analyzer:
+    image: python:3.11-slim
+    container_name: babirye-diamond-model-analyzer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  attack-graph-generator:
+    image: python:3.11-slim
+    container_name: babirye-attack-graph-generator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  risk-scoring-engine:
+    image: python:3.11-slim
+    container_name: babirye-risk-scoring-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  vuln-prioritizer:
+    image: python:3.11-slim
+    container_name: babirye-vuln-prioritizer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  patch-priority-engine:
+    image: python:3.11-slim
+    container_name: babirye-patch-priority-engine
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  compliance-checker:
+    image: python:3.11-slim
+    container_name: babirye-compliance-checker
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  incident-timer:
+    image: python:3.11-slim
+    container_name: babirye-incident-timer
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  evidence-chain-validator:
+    image: python:3.11-slim
+    container_name: babirye-evidence-chain-validator
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  timeline-reconstructor:
+    image: python:3.11-slim
+    container_name: babirye-timeline-reconstructor
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  malware-triage:
+    image: python:3.11-slim
+    container_name: babirye-malware-triage
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  phishing-detector:
+    image: python:3.11-slim
+    container_name: babirye-phishing-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  deepfake-detector:
+    image: python:3.11-slim
+    container_name: babirye-deepfake-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  social-eng-guard:
+    image: python:3.11-slim
+    container_name: babirye-social-eng-guard
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  insider-threat-detector:
+    image: python:3.11-slim
+    container_name: babirye-insider-threat-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  data-exfil-detector:
+    image: python:3.11-slim
+    container_name: babirye-data-exfil-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  lateral-movement-detector:
+    image: python:3.11-slim
+    container_name: babirye-lateral-movement-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+  persistence-detector:
+    image: python:3.11-slim
+    container_name: babirye-persistence-detector
+    restart: "no"
+    networks:
+      - micro-defensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - micro_defensive
+
+networks:
+  micro-defensive-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.34.0.0/16

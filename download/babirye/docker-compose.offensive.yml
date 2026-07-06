@@ -1,0 +1,868 @@
+services:
+  zt-gateway-offensive:
+    image: alpine:latest
+    container_name: babirye-zt-gateway-offensive
+    restart: "no"
+    networks:
+      - offensive-net
+    command: >
+      sh -c "
+        apk add --no-cache python3 py3-pip curl bash jq && pip3 install fastapi uvicorn pydantic &&
+        cat > /app/gateway.py << 'GWEOF'
+        import os, hmac, hashlib, time, json, subprocess
+        from fastapi import FastAPI, HTTPException; from pydantic import BaseModel; import uvicorn
+        SECRET = os.getenv('OFFENSIVE_SECRET', 'CHANGE_ME'); PASSWORD = os.getenv('OFFENSIVE_PASSWORD', 'CHANGE_ME')
+        ACTIVE = False; DEPLOYED = []; app = FastAPI()
+        class SPAPacket(BaseModel):
+            timestamp: int; nonce: str; signature: str; action: str; service: str = None; params: dict = {}
+        def verify_spa(p):
+            if abs(time.time() - p.timestamp) > 300: return False
+            msg = f'{p.timestamp}:{p.nonce}:{p.action}:{p.service or ""}:{json.dumps(p.params, separators=(",",":"), sort_keys=True)}'
+            expected = hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+            return hmac.compare_digest(expected, p.signature)
+        @app.post('/spa/activate')
+        async def activate(p: SPAPacket):
+            global ACTIVE
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = True; return {'status': 'activated'}
+        @app.post('/spa/deactivate')
+        async def deactivate(p: SPAPacket):
+            global ACTIVE, DEPLOYED
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = False
+            for s in DEPLOYED:
+                subprocess.run(['docker','compose','-f','/app/docker-compose.offensive.yml','--profile','offensive','stop',s])
+                subprocess.run(['docker','compose','-f','/app/docker-compose.offensive.yml','--profile','offensive','rm','-f',s])
+            DEPLOYED = []; return {'status': 'deactivated'}
+        @app.post('/spa/deploy')
+        async def deploy(p: SPAPacket):
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            if not ACTIVE: raise HTTPException(403, 'offensive arsenal dormant')
+            if not p.service: raise HTTPException(400, 'Service required')
+            result = subprocess.run(['docker','compose','-f','/app/docker-compose.offensive.yml','--profile','offensive','up','-d',p.service], capture_output=True)
+            if result.returncode == 0: DEPLOYED.append(p.service); return {'status':'deployed','service':p.service}
+            return {'status':'failed','error':result.stderr}
+        @app.get('/spa/status')
+        async def status(): return {'active': ACTIVE, 'deployed': DEPLOYED}
+        @app.get('/spa/services')
+        async def services(): return {'services': ["redamon","pentestai","empire","sliver","covenant","mythic","freeze","shhhloader","donut","pezor","scarecrow","crimson-wisp","cable","powersploit","offsec-tools","autopentest","legion","redpi","zer0dayslater","chimera-c2","agent-p2p","ghosthid","metasploit","nmap","nikto","sqlmap","hydra","john","aircrack-ng","wifite","responder","mimikatz","bloodhound","crackmapexec","ligolo-ng","chisel","dnscat2","nishang","inveigh","bettercap","ettercap","tshark","impacket","rubeus","gobuster","feroxbuster","wfuzz","arjun","subfinder","amass","httpx-toolkit","nuclei","auto-recon","linpeas","winpeas","linux-exploit-suggester","keeppwn","laudanum","phpsploit","commix","xsstrike","tplmap","whatweb","wpscan","joomscan","droopescan","recon-ng","spiderfoot","theharvester","maltego","fierce","off-extra-50"]}
+        if __name__ == '__main__': uvicorn.run(app, host='0.0.0.0', port=4747)
+        GWEOF
+        python3 /app/gateway.py
+      "
+    environment:
+      - OFFENSIVE_SECRET=${OFFENSIVE_SECRET:-CHANGE_ME}
+      - OFFENSIVE_PASSWORD=${OFFENSIVE_PASSWORD:-CHANGE_ME}
+    ports:
+      - "4747:4747"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.offensive.yml:/app/docker-compose.offensive.yml
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - offensive-net
+
+  redamon:
+    image: shashankd210/redamon:latest
+    container_name: babirye-redamon
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  pentestai:
+    image: manishmitra017/pentestai:latest
+    container_name: babirye-pentestai
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  empire:
+    image: bc-security/empire:latest
+    container_name: babirye-empire
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  sliver:
+    image: bishopfox/sliver:latest
+    container_name: babirye-sliver
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  covenant:
+    image: covenant:latest
+    container_name: babirye-covenant
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  mythic:
+    image: itsafefeaturemythic/mythic:latest
+    container_name: babirye-mythic
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  freeze:
+    image: optiv/freeze:latest
+    container_name: babirye-freeze
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  shhhloader:
+    image: icyguider/shhhloader:latest
+    container_name: babirye-shhhloader
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  donut:
+    image: thewover/donut:latest
+    container_name: babirye-donut
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  pezor:
+    image: phra/pezor:latest
+    container_name: babirye-pezor
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  scarecrow:
+    image: optiv/scarecrow:latest
+    container_name: babirye-scarecrow
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  crimson-wisp:
+    image: karmaz95/crimson_wisp:latest
+    container_name: babirye-crimson-wisp
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  cable:
+    image: cable:latest
+    container_name: babirye-cable
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  powersploit:
+    image: powershellmafia/powersploit:latest
+    container_name: babirye-powersploit
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  offsec-tools:
+    image: syslifters/offsec-tools:latest
+    container_name: babirye-offsec-tools
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  autopentest:
+    image: pavan-sk/autopentest:latest
+    container_name: babirye-autopentest
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  legion:
+    image: govanguard/legion:latest
+    container_name: babirye-legion
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  redpi:
+    image: joshuapbiju/redpi:latest
+    container_name: babirye-redpi
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  zer0dayslater:
+    image: gnoman4201/zer0dayslater:latest
+    container_name: babirye-zer0dayslater
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  chimera-c2:
+    image: ninja1984/chimera_c2:latest
+    container_name: babirye-chimera-c2
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  agent-p2p:
+    image: satorisz9/agent-p2p:latest
+    container_name: babirye-agent-p2p
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  ghosthid:
+    image: jarnster/ghosthid:latest
+    container_name: babirye-ghosthid
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  metasploit:
+    image: metasploitframework/metasploit-framework
+    container_name: babirye-metasploit
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  nmap:
+    image: instrumentisto/nmap
+    container_name: babirye-nmap
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  nikto:
+    image: sstc/nikto
+    container_name: babirye-nikto
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  sqlmap:
+    image: sqlmapproject/sqlmap
+    container_name: babirye-sqlmap
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  hydra:
+    image: haam3r/hydra
+    container_name: babirye-hydra
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  john:
+    image: openwall/john
+    container_name: babirye-john
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  aircrack-ng:
+    image: aircrackng/aircrack-ng
+    container_name: babirye-aircrack-ng
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  wifite:
+    image: wifite/wifite
+    container_name: babirye-wifite
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  responder:
+    image: python:3.11-slim
+    container_name: babirye-responder
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  mimikatz:
+    image: gentilwiki/mimikatz
+    container_name: babirye-mimikatz
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  bloodhound:
+    image: bloodhoundce/bloodhound
+    container_name: babirye-bloodhound
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  crackmapexec:
+    image: python:3.11-slim
+    container_name: babirye-crackmapexec
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  ligolo-ng:
+    image: nicocha30/ligolo-ng
+    container_name: babirye-ligolo-ng
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  chisel:
+    image: jpillora/chisel
+    container_name: babirye-chisel
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  dnscat2:
+    image: python:3.11-slim
+    container_name: babirye-dnscat2
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  nishang:
+    image: python:3.11-slim
+    container_name: babirye-nishang
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  inveigh:
+    image: python:3.11-slim
+    container_name: babirye-inveigh
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  bettercap:
+    image: bettercap/bettercap
+    container_name: babirye-bettercap
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  ettercap:
+    image: ettercap/ettercap
+    container_name: babirye-ettercap
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  tshark:
+    image: wireshark/wireshark
+    container_name: babirye-tshark
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  impacket:
+    image: secureideas/impacket
+    container_name: babirye-impacket
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  rubeus:
+    image: python:3.11-slim
+    container_name: babirye-rubeus
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  gobuster:
+    image: python:3.11-slim
+    container_name: babirye-gobuster
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  feroxbuster:
+    image: epi052/feroxbuster
+    container_name: babirye-feroxbuster
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  wfuzz:
+    image: ufuzz/wfuzz
+    container_name: babirye-wfuzz
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  arjun:
+    image: s0md3v/arjun
+    container_name: babirye-arjun
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  subfinder:
+    image: projectdiscovery/subfinder
+    container_name: babirye-subfinder
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  amass:
+    image: ffuf/amass
+    container_name: babirye-amass
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  httpx-toolkit:
+    image: projectdiscovery/httpx
+    container_name: babirye-httpx-toolkit
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  nuclei:
+    image: projectdiscovery/nuclei
+    container_name: babirye-nuclei
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  auto-recon:
+    image: python:3.11-slim
+    container_name: babirye-auto-recon
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  linpeas:
+    image: python:3.11-slim
+    container_name: babirye-linpeas
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  winpeas:
+    image: python:3.11-slim
+    container_name: babirye-winpeas
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  linux-exploit-suggester:
+    image: python:3.11-slim
+    container_name: babirye-linux-exploit-suggester
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  keeppwn:
+    image: python:3.11-slim
+    container_name: babirye-keeppwn
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  laudanum:
+    image: python:3.11-slim
+    container_name: babirye-laudanum
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  phpsploit:
+    image: phpsploit/phpsploit
+    container_name: babirye-phpsploit
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  commix:
+    image: commixproject/commix
+    container_name: babirye-commix
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  xsstrike:
+    image: python:3.11-slim
+    container_name: babirye-xsstrike
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  tplmap:
+    image: epinna/tplmap
+    container_name: babirye-tplmap
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  whatweb:
+    image: python:3.11-slim
+    container_name: babirye-whatweb
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  wpscan:
+    image: wpscanteam/wpscan
+    container_name: babirye-wpscan
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  joomscan:
+    image: python:3.11-slim
+    container_name: babirye-joomscan
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  droopescan:
+    image: droopescan/droopescan
+    container_name: babirye-droopescan
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  recon-ng:
+    image: lanmaster53/recon-ng
+    container_name: babirye-recon-ng
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  spiderfoot:
+    image: spiderfoot/spiderfoot
+    container_name: babirye-spiderfoot
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  theharvester:
+    image: laramies/theharvester
+    container_name: babirye-theharvester
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  maltego:
+    image: paterva/maltego
+    container_name: babirye-maltego
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  fierce:
+    image: python:3.11-slim
+    container_name: babirye-fierce
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+  off-extra-50:
+    image: python:3.11-slim
+    container_name: babirye-off-extra-50
+    restart: "no"
+    networks:
+      - offensive-net
+    deploy:
+      replicas: 0
+    profiles:
+      - offensive
+
+networks:
+  offensive-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

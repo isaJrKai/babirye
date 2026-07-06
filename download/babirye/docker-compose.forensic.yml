@@ -1,0 +1,208 @@
+services:
+  zt-gateway-forensic:
+    image: alpine:latest
+    container_name: babirye-zt-gateway-forensic
+    restart: "no"
+    networks:
+      - forensic-net
+    command: >
+      sh -c "
+        apk add --no-cache python3 py3-pip curl bash jq && pip3 install fastapi uvicorn pydantic &&
+        cat > /app/gateway.py << 'GWEOF'
+        import os, hmac, hashlib, time, json, subprocess
+        from fastapi import FastAPI, HTTPException; from pydantic import BaseModel; import uvicorn
+        SECRET = os.getenv('FORENSIC_SECRET', 'CHANGE_ME'); PASSWORD = os.getenv('FORENSIC_PASSWORD', 'CHANGE_ME')
+        ACTIVE = False; DEPLOYED = []; app = FastAPI()
+        class SPAPacket(BaseModel):
+            timestamp: int; nonce: str; signature: str; action: str; service: str = None; params: dict = {}
+        def verify_spa(p):
+            if abs(time.time() - p.timestamp) > 300: return False
+            msg = f'{p.timestamp}:{p.nonce}:{p.action}:{p.service or ""}:{json.dumps(p.params, separators=(",",":"), sort_keys=True)}'
+            expected = hmac.new(SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
+            return hmac.compare_digest(expected, p.signature)
+        @app.post('/spa/activate')
+        async def activate(p: SPAPacket):
+            global ACTIVE
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = True; return {'status': 'activated'}
+        @app.post('/spa/deactivate')
+        async def deactivate(p: SPAPacket):
+            global ACTIVE, DEPLOYED
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            ACTIVE = False
+            for s in DEPLOYED:
+                subprocess.run(['docker','compose','-f','/app/docker-compose.forensic.yml','--profile','forensic','stop',s])
+                subprocess.run(['docker','compose','-f','/app/docker-compose.forensic.yml','--profile','forensic','rm','-f',s])
+            DEPLOYED = []; return {'status': 'deactivated'}
+        @app.post('/spa/deploy')
+        async def deploy(p: SPAPacket):
+            if not verify_spa(p): raise HTTPException(401, 'Invalid SPA')
+            if not ACTIVE: raise HTTPException(403, 'forensic arsenal dormant')
+            if not p.service: raise HTTPException(400, 'Service required')
+            result = subprocess.run(['docker','compose','-f','/app/docker-compose.forensic.yml','--profile','forensic','up','-d',p.service], capture_output=True)
+            if result.returncode == 0: DEPLOYED.append(p.service); return {'status':'deployed','service':p.service}
+            return {'status':'failed','error':result.stderr}
+        @app.get('/spa/status')
+        async def status(): return {'active': ACTIVE, 'deployed': DEPLOYED}
+        @app.get('/spa/services')
+        async def services(): return {'services': ["andriller","lockknife","ibex","hashcat","volatility","sleuthkit","lazagne","mvt","yafed","scalpel","foremost","log2timeline"]}
+        if __name__ == '__main__': uvicorn.run(app, host='0.0.0.0', port=4748)
+        GWEOF
+        python3 /app/gateway.py
+      "
+    environment:
+      - FORENSIC_SECRET=${FORENSIC_SECRET:-CHANGE_ME}
+      - FORENSIC_PASSWORD=${FORENSIC_PASSWORD:-CHANGE_ME}
+    ports:
+      - "4748:4748"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.forensic.yml:/app/docker-compose.forensic.yml
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - forensic-net
+
+  andriller:
+    image: andriller/andriller:latest
+    container_name: babirye-andriller
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  lockknife:
+    image: lockknife/lockknife:latest
+    container_name: babirye-lockknife
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  ibex:
+    image: ibex:latest
+    container_name: babirye-ibex
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  hashcat:
+    image: hashcat/hashcat:latest
+    container_name: babirye-hashcat
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  volatility:
+    image: volatility3:latest
+    container_name: babirye-volatility
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  sleuthkit:
+    image: sleuthkit/sleuthkit:latest
+    container_name: babirye-sleuthkit
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  lazagne:
+    image: lazagne:latest
+    container_name: babirye-lazagne
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  mvt:
+    image: mvt:latest
+    container_name: babirye-mvt
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  yafed:
+    image: yafed:latest
+    container_name: babirye-yafed
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  scalpel:
+    image: scalpel:latest
+    container_name: babirye-scalpel
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  foremost:
+    image: foremost:latest
+    container_name: babirye-foremost
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+  log2timeline:
+    image: log2timeline:latest
+    container_name: babirye-log2timeline
+    restart: "no"
+    networks:
+      - forensic-net
+    deploy:
+      replicas: 0
+    profiles:
+      - forensic
+
+networks:
+  forensic-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16

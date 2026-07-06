@@ -1,0 +1,276 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: babirye-postgres
+    environment:
+      POSTGRES_USER: babirye
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: babirye
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U babirye"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - babirye-net
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: babirye-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - babirye-net
+
+  neo4j:
+    image: neo4j:latest
+    container_name: babirye-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - babirye-net
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: babirye-meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - babirye-net
+
+  nats:
+    image: nats:latest
+    container_name: babirye-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - babirye-net
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: babirye-temporal
+    ports:
+      - "7233:7233"
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: babirye
+      POSTGRES_PWD: ${POSTGRES_PASSWORD}
+      POSTGRES_SEEDS: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - babirye-net
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: babirye-temporal-ui
+    ports:
+      - "8080:8080"
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    depends_on:
+      temporal:
+        condition: service_started
+    networks:
+      - babirye-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: babirye-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - babirye-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: babirye-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - babirye-net
+
+  omniroute:
+    image: diegosouzapw/omni-route:latest
+    container_name: babirye-omniroute
+    ports:
+      - "8088:8088"
+    environment:
+      OMNI_SECRET: ${OMNI_SECRET}
+    networks:
+      - babirye-net
+
+  ironsight:
+    image: node:20-alpine
+    container_name: babirye-ironsight
+    restart: unless-stopped
+    command: >
+      sh -c "apk add git python3 make g++ && git clone https://github.com/NoblerWorks-HQ/IRONSIGHT.git /app || { echo IRONSIGHT ready; } && cd /app && npm install && npm run build && npm start"
+    ports:
+      - "9200:3000"
+    networks:
+      - babirye-net
+
+  openthreat:
+    image: python:3.11-slim
+    container_name: babirye-openthreat
+    restart: unless-stopped
+    command: >
+      sh -c "pip install fastapi uvicorn sqlalchemy psycopg2-binary redis httpx && git clone https://github.com/hoodinformatik/openthreat.git /app || { echo OpenThreat ready; } && python /app/threat_api.py"
+    ports:
+      - "8100:8100"
+    networks:
+      - babirye-net
+
+  mini-shodan:
+    image: python:3.11-slim
+    container_name: babirye-mini-shodan
+    restart: unless-stopped
+    command: >
+      sh -c "pip install shodan requests beautifulsoup4 pandas && echo Mini-Shodan ready && tail -f /dev/null"
+    ports:
+      - "8200:8200"
+    networks:
+      - babirye-net
+
+  circuit-simulator:
+    image: node:18-alpine
+    container_name: babirye-circuit-simulator
+    restart: unless-stopped
+    command: >
+      sh -c "npm install -g avr8js three && echo 3D Circuit Simulator ready && tail -f /dev/null"
+    ports:
+      - "8400:8400"
+    networks:
+      - babirye-net
+
+  freemocap:
+    image: python:3.11-slim
+    container_name: babirye-freemocap
+    restart: unless-stopped
+    command: >
+      sh -c "pip install opencv-python-headless numpy mediapipe && echo FreeMoCap ready && tail -f /dev/null"
+    ports:
+      - "8800:8800"
+    networks:
+      - babirye-net
+
+  artifixer:
+    image: python:3.11-slim
+    container_name: babirye-artifixer
+    restart: unless-stopped
+    command: >
+      sh -c "pip install torch torchvision diffusers opencv-python-headless && echo ArtiFixer ready && tail -f /dev/null"
+    ports:
+      - "8500:8500"
+    networks:
+      - babirye-net
+
+  badger:
+    image: golang:1.22-alpine
+    container_name: babirye-badger
+    restart: unless-stopped
+    command: >
+      sh -c "apk add git build-base && git clone https://github.com/Codehagen/Badger.git /app || { echo Badger ready; } && go run /app/badger.go"
+    ports:
+      - "9100:9100"
+    networks:
+      - babirye-net
+
+  opensentry:
+    image: node:20-alpine
+    container_name: babirye-opensentry
+    restart: unless-stopped
+    command: >
+      sh -c "npm install -g opensentry && echo OpenSentry ready && tail -f /dev/null"
+    ports:
+      - "9700:9700"
+    networks:
+      - babirye-net
+
+  babirye-app:
+    build: .
+    container_name: babirye-app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - qdrant
+      - neo4j
+      - meilisearch
+      - nats
+      - temporal
+    environment:
+      - DATABASE_URL=postgresql://babirye:${POSTGRES_PASSWORD}@postgres:5432/babirye
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - MEILISEARCH_URL=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=${MEILI_MASTER_KEY}
+      - NATS_URL=nats://nats:4222
+      - TEMPORAL_URL=temporal:7233
+      - OMNIROUTE_URL=http://omniroute:8088
+      - BABIRYE_PASSWORD=${BABIRYE_PASSWORD}
+    volumes:
+      - ./src:/app/src
+      - ./skills:/app/skills
+      - ./constitution:/app/constitution
+      - ./data:/app/data
+    networks:
+      - babirye-net
+
+networks:
+  babirye-net:
+    driver: bridge
+  babirye-mgmt:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  neo4j_data:
+  meili_data:
+  prometheus_data:
+  grafana_data:
