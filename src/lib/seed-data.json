@@ -1,0 +1,4128 @@
+{
+  "potentials": [
+    {
+      "name": "network_intrusion",
+      "category": "offensive",
+      "description": "Network intrusion capabilities for penetrating target network perimeters through identified vulnerabilities in firewalls, routers, and boundary defenses.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"network\", \"intrusion\", \"pentest\", \"exploit\"]"
+    },
+    {
+      "name": "vulnerability_exploitation",
+      "category": "offensive",
+      "description": "Exploitation of identified vulnerabilities in target systems using custom and public exploit code, with emphasis on reliability and stealth.",
+      "difficulty": "advanced",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"exploit\", \"vuln\", \"0day\", \"pentest\"]"
+    },
+    {
+      "name": "privilege_escalation",
+      "category": "offensive",
+      "description": "Vertical and horizontal privilege escalation on compromised systems using kernel exploits, misconfigurations, and token impersonation techniques.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"privesc\", \"root\", \"admin\", \"escalation\"]"
+    },
+    {
+      "name": "lateral_movement",
+      "category": "offensive",
+      "description": "Movement across network segments using pass-the-hash, WMI, PsExec, RDP, and other lateral movement techniques while minimizing detection.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"lateral\", \"movement\", \"network\", \"persistence\"]"
+    },
+    {
+      "name": "data_exfiltration",
+      "category": "offensive",
+      "description": "Controlled exfiltration of target data using encrypted channels, DNS tunneling, and steganographic techniques to avoid DLP systems.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"exfil\", \"data\", \"theft\", \"stealth\"]"
+    },
+    {
+      "name": "persistence_mechanism",
+      "category": "offensive",
+      "description": "Establishment of persistent access through backdoors, scheduled tasks, registry modifications, and service creation for long-term operations.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"persistence\", \"backdoor\", \"survival\", \"access\"]"
+    },
+    {
+      "name": "command_control_setup",
+      "category": "offensive",
+      "description": "Deployment and configuration of command and control infrastructure using encrypted channels, domain fronting, and peer-to-peer mesh networks.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"c2\", \"command\", \"control\", \"beacon\"]"
+    },
+    {
+      "name": "payload_delivery",
+      "category": "offensive",
+      "description": "Creation and delivery of customized payloads using various encoding, encryption, and obfuscation techniques to evade endpoint detection.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"payload\", \"malware\", \"delivery\", \"evasion\"]"
+    },
+    {
+      "name": "social_engineering_campaign",
+      "category": "offensive",
+      "description": "Planning and execution of multi-phase social engineering campaigns including spear phishing, pretexting, and baiting against target organizations.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"social\", \"phishing\", \"pretext\", \"human\"]"
+    },
+    {
+      "name": "wireless_attack",
+      "category": "offensive",
+      "description": "Exploitation of wireless networks and protocols including WiFi, Bluetooth, and RFID through injection, jamming, and rogue access point deployment.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"wireless\", \"wifi\", \"bluetooth\", \"rfid\"]"
+    },
+    {
+      "name": "hardware_implant",
+      "category": "offensive",
+      "description": "Deployment and management of hardware-based implants for persistent physical access including USB devices, network taps, and modified peripherals.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"hardware\", \"implant\", \"physical\", \"usb\"]"
+    },
+    {
+      "name": "supply_chain_compromise",
+      "category": "offensive",
+      "description": "Identification and exploitation of supply chain vulnerabilities including compromised software updates, dependencies, and hardware components.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"supply\", \"chain\", \"dependency\", \"vendor\"]"
+    },
+    {
+      "name": "zero_day_exploitation",
+      "category": "offensive",
+      "description": "Discovery, development, and deployment of zero-day exploits targeting previously unknown vulnerabilities in critical software and systems.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"0day\", \"zero\", \"novel\", \"unknown\"]"
+    },
+    {
+      "name": "credential_harvesting",
+      "category": "offensive",
+      "description": "Systematic collection of credentials through phishing sites, keylogging, memory scraping, and credential dumping from authentication stores.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"credential\", \"password\", \"harvest\", \"dump\"]"
+    },
+    {
+      "name": "session_hijacking",
+      "category": "offensive",
+      "description": "Interception and takeover of active user sessions through token theft, man-in-the-middle attacks, and session fixation techniques.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"session\", \"hijack\", \"token\", \"cookie\"]"
+    },
+    {
+      "name": "dns_poisoning",
+      "category": "offensive",
+      "description": "Manipulation of DNS resolution through cache poisoning, DNS spoofing, and rogue DNS server deployment to redirect traffic.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"dns\", \"poison\", \"spoof\", \"redirect\"]"
+    },
+    {
+      "name": "mitm_attack",
+      "category": "offensive",
+      "description": "Man-in-the-middle interception of network communications through ARP spoofing, rogue certificates, and SSL stripping.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"mitm\", \"intercept\", \"proxy\", \"ssl\"]"
+    },
+    {
+      "name": "brute_force_attack",
+      "category": "offensive",
+      "description": "Automated credential guessing attacks using dictionary, hybrid, and rule-based techniques with distributed execution and rate limit evasion.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"brute\", \"force\", \"password\", \"guess\"]"
+    },
+    {
+      "name": "pass_the_hash",
+      "category": "offensive",
+      "description": "Authentication using captured NTLM hashes without cracking, enabling lateral movement without knowing plaintext passwords.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"pth\", \"hash\", \"ntlm\", \"authentication\"]"
+    },
+    {
+      "name": "ransomware_deployment",
+      "category": "offensive",
+      "description": "Deployment of ransomware payloads for offensive operations with configurable encryption, target selection, and demand delivery mechanisms.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ransomware\", \"encrypt\", \"destructive\", \"offensive\"]"
+    },
+    {
+      "name": "intrusion_detection",
+      "category": "defensive",
+      "description": "Real-time network intrusion detection using signature-based and anomaly-based analysis of traffic patterns, protocol behavior, and payload content.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ids\", \"detection\", \"network\", \"monitor\"]"
+    },
+    {
+      "name": "intrusion_prevention",
+      "category": "defensive",
+      "description": "Active intrusion prevention through automated blocking of detected threats, integrating with firewall rules and endpoint responses.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ips\", \"prevention\", \"block\", \"automated\"]"
+    },
+    {
+      "name": "firewall_configuration",
+      "category": "defensive",
+      "description": "Design and deployment of stateful firewall rulesets including zone-based policies, application-layer filtering, and geo-IP blocking.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"firewall\", \"rules\", \"policy\", \"network\"]"
+    },
+    {
+      "name": "ids_tuning",
+      "category": "defensive",
+      "description": "Optimization of intrusion detection systems through signature tuning, threshold adjustment, and false positive reduction to improve detection accuracy.",
+      "difficulty": "advanced",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ids\", \"tuning\", \"false_positive\", \"optimize\"]"
+    },
+    {
+      "name": "network_segmentation",
+      "category": "defensive",
+      "description": "Implementation of network segmentation using VLANs, micro-segmentation, and zero-trust principles to limit lateral movement.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"segmentation\", \"vlan\", \"zero_trust\", \"isolation\"]"
+    },
+    {
+      "name": "endpoint_detection",
+      "category": "defensive",
+      "description": "Deployment of endpoint detection and response solutions with behavioral analysis, file integrity monitoring, and process auditing.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"edr\", \"endpoint\", \"agent\", \"behavioral\"]"
+    },
+    {
+      "name": "behavioral_analysis",
+      "category": "defensive",
+      "description": "Machine learning-based behavioral analysis of user and entity activity to detect anomalous patterns indicating compromise or insider threats.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"behavioral\", \"ml\", \"anomaly\", \"ueba\"]"
+    },
+    {
+      "name": "threat_hunting",
+      "category": "defensive",
+      "description": "Proactive threat hunting using hypothesis-driven investigations, IOC matching, and advanced telemetry analysis to find hidden threats.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"hunting\", \"proactive\", \"ioc\", \"investigation\"]"
+    },
+    {
+      "name": "incident_response",
+      "category": "defensive",
+      "description": "Coordinated incident response including triage, containment, eradication, recovery, and post-incident analysis following established playbooks.",
+      "difficulty": "advanced",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ir\", \"response\", \"triage\", \"containment\"]"
+    },
+    {
+      "name": "malware_analysis",
+      "category": "defensive",
+      "description": "Static and dynamic malware analysis in sandboxed environments including behavior monitoring, API call tracing, and network traffic analysis.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"malware\", \"analysis\", \"sandbox\", \"reverse\"]"
+    },
+    {
+      "name": "sandbox_analysis",
+      "category": "defensive",
+      "description": "Automated sandbox analysis of suspicious files and URLs with behavioral monitoring, screenshot capture, and IOC extraction.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"sandbox\", \"automated\", \"analysis\", \"file\"]"
+    },
+    {
+      "name": "memory_forensics",
+      "category": "defensive",
+      "description": "Acquisition and analysis of volatile memory to identify running processes, injected code, network connections, and encryption keys.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"memory\", \"ram\", \"volatile\", \"forensics\"]"
+    },
+    {
+      "name": "log_analysis",
+      "category": "defensive",
+      "description": "Comprehensive log analysis across infrastructure including authentication events, system logs, application logs, and security event correlation.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"log\", \"siem\", \"correlation\", \"event\"]"
+    },
+    {
+      "name": "siem_configuration",
+      "category": "defensive",
+      "description": "Configuration and optimization of SIEM platforms including log source integration, correlation rules, alert tuning, and dashboard creation.",
+      "difficulty": "advanced",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"siem\", \"configuration\", \"correlation\", \"dashboard\"]"
+    },
+    {
+      "name": "alert_triage",
+      "category": "defensive",
+      "description": "Systematic alert triage and investigation including severity assessment, false positive identification, and escalation procedures.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"alert\", \"triage\", \"investigate\", \"priority\"]"
+    },
+    {
+      "name": "vulnerability_scanning",
+      "category": "defensive",
+      "description": "Automated vulnerability scanning of infrastructure including network devices, web applications, databases, and cloud configurations.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"vuln\", \"scan\", \"assessment\", \"patch\"]"
+    },
+    {
+      "name": "penetration_testing",
+      "category": "defensive",
+      "description": "Authorized penetration testing of systems and networks to identify exploitable vulnerabilities before malicious actors can leverage them.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"pentest\", \"authorized\", \"exploit\", \"test\"]"
+    },
+    {
+      "name": "compliance_checking",
+      "category": "defensive",
+      "description": "Automated compliance verification against frameworks including NIST, CIS, PCI-DSS, HIPAA, and SOC 2 with gap analysis.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"compliance\", \"policy\", \"audit\", \"framework\"]"
+    },
+    {
+      "name": "hardening_script",
+      "category": "defensive",
+      "description": "Automated system hardening including OS configuration, service disabling, patch management, and security baseline enforcement.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"harden\", \"baseline\", \"configure\", \"secure\"]"
+    },
+    {
+      "name": "data_loss_prevention",
+      "category": "defensive",
+      "description": "Deployment of DLP solutions to monitor, detect, and prevent unauthorized data exfiltration through network, endpoint, and cloud channels.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"dlp\", \"exfil\", \"prevent\", \"monitor\"]"
+    },
+    {
+      "name": "disk_imaging",
+      "category": "forensic",
+      "description": "Forensic disk imaging using write-blockers and verified hashing to create bit-for-bit copies of storage media for analysis.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"disk\", \"image\", \"acquisition\", \"evidence\"]"
+    },
+    {
+      "name": "memory_dump",
+      "category": "forensic",
+      "description": "Acquisition of volatile memory from running systems using specialized tools while maintaining forensic integrity and chain of custody.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"memory\", \"ram\", \"volatile\", \"dump\"]"
+    },
+    {
+      "name": "registry_analysis",
+      "category": "forensic",
+      "description": "Analysis of Windows registry hives to extract evidence of user activity, installed software, persistent mechanisms, and system configuration.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"registry\", \"windows\", \"artifact\", \"timeline\"]"
+    },
+    {
+      "name": "event_log_analysis",
+      "category": "forensic",
+      "description": "Parsing and analysis of Windows event logs, Linux system logs, and application logs to reconstruct security-relevant timelines.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"event\", \"log\", \"windows\", \"timeline\"]"
+    },
+    {
+      "name": "file_carving",
+      "category": "forensic",
+      "description": "Recovery of deleted and fragmented files from disk images using header/footer signatures and carving algorithms.",
+      "difficulty": "advanced",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"carving\", \"recovery\", \"deleted\", \"file\"]"
+    },
+    {
+      "name": "timeline_analysis",
+      "category": "forensic",
+      "description": "Creation of comprehensive timelines from multiple forensic artifacts to reconstruct the sequence of events during an incident.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"timeline\", \"sequence\", \"reconstruct\", \"artifact\"]"
+    },
+    {
+      "name": "network_capture",
+      "category": "forensic",
+      "description": "Full packet capture and analysis of network traffic for forensic investigation of network-based attacks and data exfiltration.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"pcap\", \"network\", \"capture\", \"packet\"]"
+    },
+    {
+      "name": "packet_analysis",
+      "category": "forensic",
+      "description": "Deep packet inspection and protocol analysis to reconstruct network sessions, extract files, and identify malicious communications.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"packet\", \"protocol\", \"reconstruct\", \"network\"]"
+    },
+    {
+      "name": "mobile_acquisition",
+      "category": "forensic",
+      "description": "Physical and logical acquisition of mobile devices including smartphones and tablets with full file system extraction.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"mobile\", \"phone\", \"acquisition\", \"device\"]"
+    },
+    {
+      "name": "android_forensics",
+      "category": "forensic",
+      "description": "Specialized forensic analysis of Android devices including app data extraction, database parsing, and location history recovery.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"android\", \"mobile\", \"forensics\", \"extraction\"]"
+    },
+    {
+      "name": "ios_forensics",
+      "category": "forensic",
+      "description": "Forensic analysis of iOS devices including backup extraction, keychain decryption, and app sandbox analysis.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ios\", \"apple\", \"iphone\", \"forensics\"]"
+    },
+    {
+      "name": "malware_triage",
+      "category": "forensic",
+      "description": "Rapid malware triage to determine capabilities, persistence mechanisms, and network communications of suspicious binaries.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"malware\", \"triage\", \"analysis\", \"capability\"]"
+    },
+    {
+      "name": "evidence_preservation",
+      "category": "forensic",
+      "description": "Proper evidence preservation following forensic best practices including hashing, documentation, and chain of custody maintenance.",
+      "difficulty": "beginner",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"evidence\", \"preserve\", \"chain\", \"custody\"]"
+    },
+    {
+      "name": "hash_verification",
+      "category": "forensic",
+      "description": "Cryptographic hash verification of forensic evidence using MD5, SHA-1, and SHA-256 to ensure data integrity.",
+      "difficulty": "beginner",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"hash\", \"verify\", \"integrity\", \"sha256\"]"
+    },
+    {
+      "name": "deleted_file_recovery",
+      "category": "forensic",
+      "description": "Recovery of deleted files from file systems including NTFS, FAT32, ext4, and APFS using filesystem analysis techniques.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"deleted\", \"recovery\", \"filesystem\", \"undelete\"]"
+    },
+    {
+      "name": "osint_collection",
+      "category": "intelligence",
+      "description": "Systematic open source intelligence collection from public sources including social media, public records, and online publications.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"osint\", \"public\", \"recon\", \"intelligence\"]"
+    },
+    {
+      "name": "dark_web_monitoring",
+      "category": "intelligence",
+      "description": "Continuous monitoring of dark web marketplaces, forums, and paste sites for leaked credentials, company data, and threat discussions.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"dark_web\", \"tor\", \"monitor\", \"leak\"]"
+    },
+    {
+      "name": "social_media_monitoring",
+      "category": "intelligence",
+      "description": "Monitoring of social media platforms for threat indicators, brand mentions, and geopolitical intelligence relevant to security operations.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"social\", \"media\", \"monitor\", \"sentiment\"]"
+    },
+    {
+      "name": "domain_monitoring",
+      "category": "intelligence",
+      "description": "Continuous monitoring of domain registrations, DNS changes, and SSL certificate issuance related to target organizations.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"domain\", \"dns\", \"ssl\", \"monitor\"]"
+    },
+    {
+      "name": "ip_reputation_check",
+      "category": "intelligence",
+      "description": "Real-time IP address reputation checking against multiple threat intelligence feeds and blocklists for rapid threat assessment.",
+      "difficulty": "beginner",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ip\", \"reputation\", \"threat\", \"blocklist\"]"
+    },
+    {
+      "name": "subdomain_discovery",
+      "category": "intelligence",
+      "description": "Automated discovery of subdomains associated with target domains using DNS enumeration, certificate transparency, and brute force techniques.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"subdomain\", \"dns\", \"enumerate\", \"discovery\"]"
+    },
+    {
+      "name": "port_scanning",
+      "category": "intelligence",
+      "description": "Comprehensive port scanning of target networks to identify open services, running versions, and potential attack surfaces.",
+      "difficulty": "beginner",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"port\", \"scan\", \"service\", \"enumerate\"]"
+    },
+    {
+      "name": "service_fingerprinting",
+      "category": "intelligence",
+      "description": "Accurate identification of running services and versions through banner grabbing, probe responses, and behavioral analysis.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"fingerprint\", \"service\", \"version\", \"identify\"]"
+    },
+    {
+      "name": "technology_detection",
+      "category": "intelligence",
+      "description": "Detection of web technologies, frameworks, CMS platforms, and JavaScript libraries used by target web applications.",
+      "difficulty": "beginner",
+      "impact": "low",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"tech\", \"detect\", \"web\", \"framework\"]"
+    },
+    {
+      "name": "email_harvesting",
+      "category": "intelligence",
+      "description": "Collection of email addresses associated with target organizations using search engines, social media, and public documents.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"email\", \"harvest\", \"collect\", \"recon\"]"
+    },
+    {
+      "name": "credential_monitoring",
+      "category": "intelligence",
+      "description": "Monitoring of breached credential databases and paste sites for compromised accounts associated with target organizations.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"credential\", \"breach\", \"leak\", \"monitor\"]"
+    },
+    {
+      "name": "threat_actor_tracking",
+      "category": "intelligence",
+      "description": "Tracking of known threat actors and APT groups including TTPs, infrastructure, and campaign attribution.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"apt\", \"actor\", \"tracking\", \"attribution\"]"
+    },
+    {
+      "name": "apt_tracking",
+      "category": "intelligence",
+      "description": "Advanced Persistent Threat group tracking including infrastructure mapping, malware analysis, and campaign correlation.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"apt\", \"persistent\", \"campaign\", \"threat\"]"
+    },
+    {
+      "name": "ioc_extraction",
+      "category": "intelligence",
+      "description": "Automated extraction of Indicators of Compromise from threat reports, malware samples, and network traffic.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ioc\", \"extract\", \"indicator\", \"automated\"]"
+    },
+    {
+      "name": "vulnerability_intelligence",
+      "category": "intelligence",
+      "description": "Continuous monitoring of vulnerability disclosures, CVSS scoring, and exploit availability for the enterprise attack surface.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"vuln\", \"cve\", \"exploit\", \"intelligence\"]"
+    },
+    {
+      "name": "drone_surveillance",
+      "category": "vip",
+      "description": "Aerial surveillance operations using multi-rotor and fixed-wing drones equipped with EO/IR cameras for perimeter security and threat detection.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"drone\", \"aerial\", \"surveillance\", \"camera\"]"
+    },
+    {
+      "name": "drone_perimeter_patrol",
+      "category": "vip",
+      "description": "Automated perimeter patrol using pre-programmed flight routes with real-time video feed and anomaly detection capabilities.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"drone\", \"perimeter\", \"patrol\", \"automated\"]"
+    },
+    {
+      "name": "vehicle_route_optimization",
+      "category": "vip",
+      "description": "Real-time route optimization for VIP convoys incorporating threat intelligence, traffic conditions, and alternative route planning.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"vehicle\", \"route\", \"optimize\", \"convoy\"]"
+    },
+    {
+      "name": "wearable_health_monitoring",
+      "category": "vip",
+      "description": "Continuous biometric monitoring through wearable devices tracking heart rate, blood pressure, temperature, and stress indicators.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"wearable\", \"health\", \"biometric\", \"monitor\"]"
+    },
+    {
+      "name": "biometric_access_control",
+      "category": "vip",
+      "description": "Multi-factor biometric access control using fingerprint, facial recognition, iris scanning, and behavioral biometrics for secure facility entry.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"biometric\", \"access\", \"fingerprint\", \"facial\"]"
+    },
+    {
+      "name": "facial_recognition",
+      "category": "vip",
+      "description": "Real-time facial recognition integrated with CCTV systems for VIP identification, stranger detection, and watchlist alerting.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"facial\", \"recognition\", \"cctv\", \"identify\"]"
+    },
+    {
+      "name": "lpr_system",
+      "category": "vip",
+      "description": "License plate recognition system for vehicle tracking, access control, and automated VIP vehicle identification at checkpoints.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"lpr\", \"plate\", \"vehicle\", \"anpr\"]"
+    },
+    {
+      "name": "cctv_ai_analysis",
+      "category": "vip",
+      "description": "AI-powered CCTV analysis for crowd detection, loitering alerts, abandoned object identification, and behavioral anomaly detection.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"cctv\", \"ai\", \"video\", \"analytics\"]"
+    },
+    {
+      "name": "perimeter_intrusion_detection",
+      "category": "vip",
+      "description": "Multi-layer perimeter intrusion detection combining ground sensors, thermal cameras, and microwave barriers for comprehensive coverage.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"perimeter\", \"intrusion\", \"sensor\", \"detect\"]"
+    },
+    {
+      "name": "secure_communications",
+      "category": "vip",
+      "description": "End-to-end encrypted communications for VIP protection teams using secure voice, messaging, and video conferencing systems.",
+      "difficulty": "advanced",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"comms\", \"encrypt\", \"secure\", \"voice\"]"
+    },
+    {
+      "name": "scada_exploitation",
+      "category": "cyber_kinetic",
+      "description": "Exploitation of SCADA systems and industrial control networks through protocol manipulation, firmware vulnerabilities, and HMI interfaces.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"scada\", \"ics\", \"industrial\", \"exploit\"]"
+    },
+    {
+      "name": "ics_network_discovery",
+      "category": "cyber_kinetic",
+      "description": "Discovery and mapping of industrial control system networks including PLCs, RTUs, HMIs, and communication protocols.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"ics\", \"network\", \"plc\", \"discover\"]"
+    },
+    {
+      "name": "plc_manipulation",
+      "category": "cyber_kinetic",
+      "description": "Remote manipulation of Programmable Logic Controllers through protocol exploitation including Modbus, DNP3, and OPC UA.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"plc\", \"modbus\", \"control\", \"manipulate\"]"
+    },
+    {
+      "name": "building_systems_control",
+      "category": "cyber_kinetic",
+      "description": "Exploitation and defensive hardening of building automation systems including HVAC, lighting, elevators, and access control.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"bms\", \"hvac\", \"building\", \"automate\"]"
+    },
+    {
+      "name": "hvac_manipulation",
+      "category": "cyber_kinetic",
+      "description": "Manipulation of HVAC systems for environmental control exploitation or defense, including temperature and airflow attacks.",
+      "difficulty": "intermediate",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"hvac\", \"temperature\", \"environment\", \"control\"]"
+    },
+    {
+      "name": "access_control_bypass",
+      "category": "cyber_kinetic",
+      "description": "Techniques for bypassing physical and logical access control systems including card cloning, tailgating detection, and protocol attacks.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"access\", \"bypass\", \"physical\", \"card\"]"
+    },
+    {
+      "name": "gps_spoofing",
+      "category": "cyber_kinetic",
+      "description": "GPS spoofing attacks against navigation systems, vehicle tracking, and timing-dependent infrastructure.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"gps\", \"spoof\", \"navigation\", \"timing\"]"
+    },
+    {
+      "name": "drone_hijacking",
+      "category": "cyber_kinetic",
+      "description": "Exploitation and hijacking of commercial drone systems through protocol manipulation, GPS spoofing, and RF interference.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"drone\", \"hijack\", \"rf\", \"protocol\"]"
+    },
+    {
+      "name": "medical_device_exploitation",
+      "category": "cyber_kinetic",
+      "description": "Security assessment and exploitation of networked medical devices including infusion pumps, pacemakers, and imaging systems.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"medical\", \"device\", \"healthcare\", \"patient\"]"
+    },
+    {
+      "name": "power_grid_attack",
+      "category": "cyber_kinetic",
+      "description": "Simulation and defense against cyber attacks on power grid infrastructure including SCADA, substations, and distribution systems.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"power\", \"grid\", \"energy\", \"critical\"]"
+    },
+    {
+      "name": "sigint_collection",
+      "category": "electronic_warfare",
+      "description": "Signals intelligence collection across radio frequency spectrum for communication intercept and electronic order of battle development.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"sigint\", \"signal\", \"collect\", \"intercept\"]"
+    },
+    {
+      "name": "comint_analysis",
+      "category": "electronic_warfare",
+      "description": "Communications intelligence analysis of intercepted voice and data communications for content extraction and network mapping.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"comint\", \"communication\", \"analyze\", \"intercept\"]"
+    },
+    {
+      "name": "elint_analysis",
+      "category": "electronic_warfare",
+      "description": "Electronic intelligence analysis of radar and electronic emissions for threat identification and order of battle development.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"elint\", \"radar\", \"electronic\", \"emission\"]"
+    },
+    {
+      "name": "communication_jamming",
+      "category": "electronic_warfare",
+      "description": "Targeted communication jamming across VHF/UHF/SATCOM frequency bands to deny adversary command and control capabilities.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"jam\", \"communication\", \"deny\", \"rf\"]"
+    },
+    {
+      "name": "radar_jamming",
+      "category": "electronic_warfare",
+      "description": "Electronic countermeasures against radar systems including noise jamming, deceptive jamming, and DRFM techniques.",
+      "difficulty": "expert",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"radar\", \"jam\", \"ecm\", \"deceptive\"]"
+    },
+    {
+      "name": "gps_denial",
+      "category": "electronic_warfare",
+      "description": "GPS denial operations through jamming and spoofing to disrupt adversary navigation and timing-dependent systems.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"gps\", \"denial\", \"jam\", \"spoof\"]"
+    },
+    {
+      "name": "spectrum_monitoring",
+      "category": "electronic_warfare",
+      "description": "Continuous spectrum monitoring and signal identification across wide frequency ranges for situational awareness and threat detection.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"spectrum\", \"monitor\", \"signal\", \"rf\"]"
+    },
+    {
+      "name": "direction_finding",
+      "category": "electronic_warfare",
+      "description": "Radio direction finding and emitter location using triangulation, time difference of arrival, and frequency difference of arrival.",
+      "difficulty": "advanced",
+      "impact": "high",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"direction\", \"find\", \"locate\", \"emitter\"]"
+    },
+    {
+      "name": "rf_sweep",
+      "category": "electronic_warfare",
+      "description": "Automated RF spectrum sweeps for signal detection, frequency occupancy analysis, and electromagnetic environment assessment.",
+      "difficulty": "intermediate",
+      "impact": "medium",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"rf\", \"sweep\", \"spectrum\", \"scan\"]"
+    },
+    {
+      "name": "emp_simulation",
+      "category": "electronic_warfare",
+      "description": "Simulation and modeling of electromagnetic pulse effects on electronic systems for vulnerability assessment and hardening planning.",
+      "difficulty": "expert",
+      "impact": "critical",
+      "requirements": "[]",
+      "isActive": true,
+      "tags": "[\"emp\", \"electromagnetic\", \"pulse\", \"effect\"]"
+    }
+  ],
+  "offensive_tools": [
+    {
+      "name": "Nmap",
+      "category": "recon",
+      "description": "Network exploration and security auditing tool for host discovery, port scanning, version detection, and OS fingerprinting.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "nmap/nmap:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Masscan",
+      "category": "recon",
+      "description": "Mass IP port scanner capable of scanning the entire internet in under six minutes, optimized for speed and scale.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/masscan:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Shodan",
+      "category": "recon",
+      "description": "Search engine for Internet-connected devices providing real-time intelligence on exposed services and vulnerabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/shodan:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "The Harvester",
+      "category": "recon",
+      "description": "OSINT tool for gathering email addresses, subdomains, and host information from public sources.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/theharvester:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Recon Ng",
+      "category": "recon",
+      "description": "Full-featured web reconnaissance framework written in Python with modular architecture for automated OSINT collection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/recon-ng:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Amass",
+      "category": "recon",
+      "description": "In-depth attack surface mapping and asset discovery tool integrating DNS, web scraping, and certificate data.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/amass:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Spiderfoot",
+      "category": "recon",
+      "description": "Automated OSINT collection platform with over 200 data modules for comprehensive reconnaissance.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/spiderfoot:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Maltego",
+      "category": "recon",
+      "description": "Interactive data mining and link analysis tool for visualizing relationships between entities in investigations.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/maltego:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Metasploit",
+      "category": "exploitation",
+      "description": "Comprehensive penetration testing framework with thousands of exploits, payloads, and auxiliary modules.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/metasploit:latest",
+      "port": 4444,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Sqlmap",
+      "category": "exploitation",
+      "description": "Automated SQL injection and database takeover tool supporting multiple database engines and injection techniques.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/sqlmap:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Burpsuite",
+      "category": "exploitation",
+      "description": "Web application security testing platform with proxy, scanner, and intruder capabilities for HTTP manipulation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/burpsuite:latest",
+      "port": 8080,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Nuclei",
+      "category": "exploitation",
+      "description": "Fast template-based vulnerability scanner with customizable YAML templates for automated security testing.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/nuclei:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Exploitdb",
+      "category": "exploitation",
+      "description": "Comprehensive archive of public exploits and vulnerable software for security research and testing.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/exploitdb:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Hping3",
+      "category": "exploitation",
+      "description": "TCP/IP packet assembler and analyzer for network auditing, firewall testing, and DOS attack simulation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/hping3:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Arachni",
+      "category": "exploitation",
+      "description": "Full-featured web application security scanner with support for JavaScript-heavy applications and AJAX.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/arachni:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Wfuzz",
+      "category": "exploitation",
+      "description": "Web application fuzzer for brute forcing parameters, directories, and virtual hosts with multiple injection points.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/wfuzz:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Mimikatz",
+      "category": "post_exploitation",
+      "description": "Post-exploitation credential extraction tool for Windows systems capable of dumping LSASS memory and Kerberos tickets.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/mimikatz:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Bloodhound",
+      "category": "post_exploitation",
+      "description": "Active Directory reconnaissance tool using graph theory to identify attack paths and privileged relationships.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/bloodhound:latest",
+      "port": 7687,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Crackmapexec",
+      "category": "post_exploitation",
+      "description": "Swiss army knife for pentesting Windows/Active Directory environments with SMB, WinRM, and LDAP support.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/crackmapexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Impacket",
+      "category": "post_exploitation",
+      "description": "Python library for network protocol interaction including SMB, Kerberos, and LDAP for post-exploitation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/impacket:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Rubeus",
+      "category": "post_exploitation",
+      "description": "C# toolset for raw Kerberos ticket manipulation including pass-the-ticket, golden ticket, and kerberoasting.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/rubeus:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Seatbelt",
+      "category": "post_exploitation",
+      "description": "C# security audit tool for Windows that performs numerous system checks for privilege escalation opportunities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/seatbelt:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Powersploit",
+      "category": "post_exploitation",
+      "description": "PowerShell post-exploitation module collection for reconnaissance, privilege escalation, and persistence.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/powersploit:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Cobalt Strike",
+      "category": "c2",
+      "description": "Commercial adversary simulation and red team operations platform with advanced beacon and team server capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/cobalt-strike:latest",
+      "port": 50050,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Sliver",
+      "category": "c2",
+      "description": "Open source cross-platform C2 framework with implant generation, peer-to-peer mesh, and malleable C2 profiles.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/sliver:latest",
+      "port": 31337,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Havoc",
+      "category": "c2",
+      "description": "Modern post-exploitation C2 framework with advanced capabilities including BOF support and external C2 integration.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/havoc:latest",
+      "port": 40056,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Mythic",
+      "category": "c2",
+      "description": "Collaborative C2 platform with extensible agent architecture supporting custom payload development.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/mythic:latest",
+      "port": 7443,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Empire",
+      "category": "c2",
+      "description": "Post-exploitation and adversary emulation framework with PowerShell and Python agent capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/empire:latest",
+      "port": 1337,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Poshc2",
+      "category": "c2",
+      "description": "C2 framework written in PowerShell for Windows target environments with proxy-aware communications.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/poshc2:latest",
+      "port": 8443,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Merlin",
+      "category": "c2",
+      "description": "Cross-platform post-exploitation HTTP/2 C2 server using gRPC for agent communications.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/merlin:latest",
+      "port": 443,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Covenant",
+      "category": "persistence",
+      "description": "NET command and control framework with asynchronous communication and dynamic module loading capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/covenant:latest",
+      "port": 7443,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Sharphound",
+      "category": "persistence",
+      "description": "Active Directory data collector for BloodHound providing comprehensive domain enumeration and relationship mapping.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/sharphound:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Nltest",
+      "category": "persistence",
+      "description": "Windows domain trust enumeration tool for identifying domain relationships and trust paths during lateral movement.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/nltest:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Autoruns Sys",
+      "category": "persistence",
+      "description": "Microsoft Sysinternals tool for viewing and managing auto-start locations on Windows systems for persistence analysis.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/autoruns:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Schtasks",
+      "category": "persistence",
+      "description": "Windows scheduled task management for creating persistent tasks with SYSTEM-level execution and trigger-based activation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/schtasks:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Registry Persist",
+      "category": "persistence",
+      "description": "Windows registry-based persistence mechanisms using Run keys, Services, and AppInit_DLLs for execution on boot.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/registry-persist:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Wmi Persist",
+      "category": "persistence",
+      "description": "Windows Management Instrumentation persistence using event subscriptions, permanent consumers, and active script events.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/wmi-persist:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Psexec",
+      "category": "lateral",
+      "description": "Remote execution tool using SMB and Windows administrative shares for lateral movement across Windows networks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/psexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Wmiexec",
+      "category": "lateral",
+      "description": "Windows remote execution through WMI for lateral movement without creating visible services on target systems.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/wmiexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Smbexec",
+      "category": "lateral",
+      "description": "SMB-based remote command execution using temporary services for stealthy lateral movement across Windows domains.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/smbexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Dcomexec",
+      "category": "lateral",
+      "description": "Distributed COM-based remote execution leveraging Windows Component Object Model for lateral movement.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/dcomexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Atexec",
+      "category": "lateral",
+      "description": "Remote execution through Windows Task Scheduler for time-based lateral movement and persistence.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/atexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Sshexec",
+      "category": "lateral",
+      "description": "SSH-based remote command execution for lateral movement across Linux and Unix environments.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/sshexec:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Rdpexec",
+      "category": "lateral",
+      "description": "RDP-based remote desktop and command execution for graphical lateral movement across Windows networks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/rdpexec:latest",
+      "port": 3389,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Msfvenom",
+      "category": "payload",
+      "description": "Metasploit payload generator supporting multiple output formats, encoders, and encryption for custom payload creation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/msfvenom:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Veil",
+      "category": "payload",
+      "description": "Payload generation framework specializing in Python and C payload creation with built-in encryption and evasion.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/veil:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Hypervisor Packer",
+      "category": "payload",
+      "description": "Payload packager using hypervisor-based evasion techniques to hide malicious code from endpoint detection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/hypervisor-packer:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Shellter",
+      "category": "payload",
+      "description": "Dynamic shellcode injection tool for Windows PE files with automatic infection and evasion capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/shellter:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Avet",
+      "category": "payload",
+      "description": "Anti-virus evasion tool for creating executables that bypass common endpoint detection products.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/avet:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Venom",
+      "category": "payload",
+      "description": "Payload generation and wrapper tool using multiple encoding techniques including XOR, AES, and custom algorithms.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/venom:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Great Sct",
+      "category": "payload",
+      "description": "PowerShell-based payload generation and delivery framework with COM-based execution for evasion.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/great-sct:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Gophish",
+      "category": "social_engineering",
+      "description": "Open-source phishing toolkit for creating and managing phishing campaigns with real-time campaign tracking.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/gophish:latest",
+      "port": 3333,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Setoolkit",
+      "category": "social_engineering",
+      "description": "Social Engineering Toolkit providing vector-based social engineering attacks including phishing and payload delivery.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/setoolkit:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "King Phisher",
+      "category": "social_engineering",
+      "description": "Phishing campaign management toolkit with email template designer and campaign analytics dashboard.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/king-phisher:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Evilginx",
+      "category": "social_engineering",
+      "description": "Man-in-the-middle phishing framework for bypassing two-factor authentication through reverse proxy techniques.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/evilginx:latest",
+      "port": 443,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Modlishka",
+      "category": "social_engineering",
+      "description": "Reverse proxy phishing tool for capturing authentication credentials and session cookies from targeted services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/modlishka:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Noer",
+      "category": "social_engineering",
+      "description": "Phishing framework for creating credential harvesting portals with customizable templates and bypass techniques.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/noer:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Credsniper",
+      "category": "social_engineering",
+      "description": "Phishing tool for harvesting credentials through cloned login pages with real-time data capture.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/credsniper:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Aircrack Ng",
+      "category": "wireless",
+      "description": "Complete suite of wireless network assessment tools for monitoring, attacking, testing, and cracking WiFi networks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/aircrack-ng:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Wifite",
+      "category": "wireless",
+      "description": "Automated wireless auditing script for mass WPA/WEP cracking with multiple attack vectors.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/wifite:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Bettercap",
+      "category": "wireless",
+      "description": "Powerful and easily extensible network attack and monitoring framework with wireless protocol support.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/bettercap:latest",
+      "port": 8081,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Karma",
+      "category": "wireless",
+      "description": "Wireless access point that responds to all probe requests for rogue AP and evil twin attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/karma:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Hostapd Wpe",
+      "category": "wireless",
+      "description": "Modified hostapd for conducting WiFi Protected Setup attacks against enterprise wireless networks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/hostapd-wpe:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Fluxion",
+      "category": "wireless",
+      "description": "Automated WiFi cracking tool using social engineering and man-in-the-middle techniques for WPA handshakes.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/fluxion:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Reaver",
+      "category": "wireless",
+      "description": "WPS brute force attack tool for recovering WPA/WPA2 passwords from WiFi access points.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/reaver:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Rubber Ducky",
+      "category": "hardware",
+      "description": "USB HID attack device that emulates a keyboard for automated payload delivery at superhuman typing speed.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/rubber-ducky:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Bash Bunny",
+      "category": "hardware",
+      "description": "Multi-function USB attack platform with payload switching, network access, and HID/ethernet/storage modes.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/bash-bunny:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Lan Turtle",
+      "category": "hardware",
+      "description": "Covert network access and man-in-the-middle tool designed for physical network penetration testing.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/lan-turtle:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Packet Squirrel",
+      "category": "hardware",
+      "description": "Portable network man-in-the-middle tool for covert packet capture and injection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/packet-squirrel:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Usb Armory",
+      "category": "hardware",
+      "description": "Compact USB-powered computer designed for security applications and covert operations.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/usb-armory:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Hackrf",
+      "category": "hardware",
+      "description": "Software-defined radio peripheral for transmitting and receiving radio signals across a wide frequency range.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/hackrf:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    },
+    {
+      "name": "Usrp",
+      "category": "hardware",
+      "description": "Universal Software Radio Peripheral for advanced RF applications including signal processing and spectrum analysis.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "offensive/usrp:latest",
+      "port": null,
+      "config": "{}",
+      "riskLevel": "high",
+      "requiresAuth": true
+    }
+  ],
+  "defensive_tools": [
+    {
+      "name": "Suricata",
+      "category": "network",
+      "description": "High-performance network IDS/IPS engine with real-time intrusion detection, protocol detection, and file extraction.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/suricata:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Snort",
+      "category": "network",
+      "description": "Open-source network intrusion prevention system combining signature, protocol, and anomaly-based inspection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/snort:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Zeek",
+      "category": "network",
+      "description": "Powerful network analysis framework for deep packet inspection and network security monitoring.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/zeek:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OSSEC",
+      "category": "network",
+      "description": "Open-source host-based intrusion detection system with log analysis, file integrity monitoring, and rootkit detection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/ossec:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Wazuh",
+      "category": "network",
+      "description": "Security analytics platform combining SIEM and XDR capabilities with endpoint detection and compliance monitoring.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/wazuh:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Fail2Ban",
+      "category": "network",
+      "description": "Intrusion prevention framework that protects servers from brute force attacks by blocking suspicious IP addresses.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/fail2ban:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CrowdSec",
+      "category": "network",
+      "description": "Collaborative intrusion prevention system using crowd-sourced threat intelligence for IP reputation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/crowdsec:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "PF Firewall",
+      "category": "network",
+      "description": "OpenBSD packet filter providing stateful inspection and network address translation capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/pf-firewall:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "IPTables",
+      "category": "network",
+      "description": "Linux kernel-level firewall for packet filtering and network address translation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/iptables:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "NFTables",
+      "category": "network",
+      "description": "Modern Linux firewall framework replacing iptables with improved performance and expressiveness.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/nftables:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "VPN Gateway",
+      "category": "network",
+      "description": "Centralized VPN gateway providing secure encrypted tunnels for remote access and site-to-site connectivity.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/vpn-gateway:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "WireGuard",
+      "category": "network",
+      "description": "Modern high-performance VPN protocol using state-of-the-art cryptography with minimal codebase.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/wireguard:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OpenVPN",
+      "category": "network",
+      "description": "Full-featured open-source VPN solution supporting SSL/TLS encryption and multiple authentication methods.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/openvpn:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "ZeroTier",
+      "category": "network",
+      "description": "Software-defined networking platform creating encrypted virtual networks across physical boundaries.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/zerotier:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Tinc VPN",
+      "category": "network",
+      "description": "Decentralized mesh VPN daemon that creates secure virtual private networks between hosts.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/tinc-vpn:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Osquery",
+      "category": "endpoint",
+      "description": "SQL-powered operating system instrumentation framework for endpoint monitoring and threat detection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/osquery:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Velociraptor",
+      "category": "endpoint",
+      "description": "Digital forensics and endpoint monitoring tool with fast artifact collection and real-time response.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/velociiraptor:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "LimaCharlie",
+      "category": "endpoint",
+      "description": "Endpoint security platform providing real-time telemetry collection, detection, and response capabilities.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/limacharlie:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OSSEC Agent",
+      "category": "endpoint",
+      "description": "Host-based agent for the OSSEC HIDS providing log collection, integrity checking, and rootkit detection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/ossec-agent:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Sysmon",
+      "category": "endpoint",
+      "description": "Windows system monitoring driver providing detailed process, network, and file system event logging.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/sysmon:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Autoruns",
+      "category": "endpoint",
+      "description": "Microsoft Sysinternals tool for managing Windows auto-start locations and detecting persistence mechanisms.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/autoruns-sys:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "YARA Engine",
+      "category": "endpoint",
+      "description": "Pattern matching engine for malware research and threat detection using custom rule definitions.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/yara-engine:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "ClamAV",
+      "category": "endpoint",
+      "description": "Open-source antivirus engine for malware detection with signature-based and heuristic scanning.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/clamav:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Sophos Agent",
+      "category": "endpoint",
+      "description": "Next-generation endpoint protection agent with machine learning and exploit prevention.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/sophos-agent:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Carbon Black",
+      "category": "endpoint",
+      "description": "Cloud-native endpoint protection platform with real-time visibility and threat detection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/carbon-black:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CrowdStrike Falcon",
+      "category": "endpoint",
+      "description": "Cloud-delivered endpoint protection platform combining EDR, threat intelligence, and managed hunting.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/crowdstrike-falcon:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Sentinel One",
+      "category": "endpoint",
+      "description": "Autonomous AI-powered endpoint protection platform with behavioral AI engine for prevention.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/sentinel-one:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Defender ATP",
+      "category": "endpoint",
+      "description": "Microsoft Advanced Threat Protection providing unified defense across endpoints, email, and identity.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/defender-atp:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Cortex XDR",
+      "category": "endpoint",
+      "description": "Palo Alto Networks extended detection and response platform with AI-driven threat analysis.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cortex-xdr:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Deep Instinct",
+      "category": "endpoint",
+      "description": "Deep learning-based endpoint protection platform using neural networks for threat prevention.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/deep-instinct:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "ModSecurity",
+      "category": "application",
+      "description": "Open-source web application firewall embedded in web servers for HTTP traffic inspection and attack blocking.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/modsecurity:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Coraza WAF",
+      "category": "application",
+      "description": "Cloud-native web application firewall compatible with ModSecurity rules and OWASP Core Rule Set.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/coraza-waf:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Open AppSec",
+      "category": "application",
+      "description": "Open-source application security platform providing WAF, API security, and bot protection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/open-appsec:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "JWT Toolkit",
+      "category": "application",
+      "description": "JSON Web Token validation and analysis tool for API authentication security testing.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/jwt-toolkit:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OAuth2 Proxy",
+      "category": "application",
+      "description": "Reverse proxy providing authentication and authorization via OAuth2 providers for internal applications.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/oauth2-proxy:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Keycloak Auth",
+      "category": "application",
+      "description": "Open-source identity and access management solution with SSO, OIDC, and SAML support.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/keycloak-auth:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Authelia",
+      "category": "application",
+      "description": "Single sign-on and two-factor authentication portal for web applications and internal services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/authelia:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Traefik Proxy",
+      "category": "application",
+      "description": "Modern HTTP reverse proxy and load balancer with automatic service discovery and TLS termination.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/traefik-proxy:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Envoy Proxy",
+      "category": "application",
+      "description": "High-performance L4/L7 proxy and communication bus for service mesh and API gateway deployments.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/envoy-proxy:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Kong Gateway",
+      "category": "application",
+      "description": "Cloud-native API gateway providing authentication, rate limiting, and traffic management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/kong-gateway:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Rate Limiter",
+      "category": "application",
+      "description": "Distributed rate limiting middleware protecting APIs from abuse and denial of service attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/rate-limiter-mw:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CORS Middleware",
+      "category": "application",
+      "description": "Cross-origin resource security middleware enforcing strict CORS policies for web applications.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cors-middleware:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CSP Enforcer",
+      "category": "application",
+      "description": "Content Security Policy enforcement engine preventing XSS and code injection attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/csp-enforcer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Header Guard",
+      "category": "application",
+      "description": "HTTP security header management tool enforcing best-practice security headers on all responses.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/header-guard:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OpenLDAP",
+      "category": "identity",
+      "description": "Open-source LDAP directory server providing centralized authentication and authorization services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/open-ldap:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Authentik ID",
+      "category": "identity",
+      "description": "Flexible identity provider supporting SAML2, OIDC, and LDAP with flow-based customization.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/authentik-id:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Dex IDP",
+      "category": "identity",
+      "description": "OpenID Connect identity provider with pluggable connectors for enterprise identity systems.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/dex-idp:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Keycloak ID",
+      "category": "identity",
+      "description": "Open-source identity and access management with enterprise SSO, federation, and user management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/keycloak-id:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Pomerium",
+      "category": "identity",
+      "description": "Zero-trust identity-aware access proxy providing secure access to internal applications.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/pomerium:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Beyond Identity",
+      "category": "identity",
+      "description": "Passwordless identity platform providing device-bound credentials and continuous authentication.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/beyond-identity:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OATH Keeper",
+      "category": "identity",
+      "description": "Time-based one-time password management for multi-factor authentication across enterprise services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/oath-keeper:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Hydra IAM",
+      "category": "identity",
+      "description": "Cloud-native identity and access management server with OAuth2 and OpenID Connect support.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/hydra-iam:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Casbin OPA",
+      "category": "identity",
+      "description": "Authorization library supporting access control models including RBAC, ABAC, and ACL.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/casbin-opa:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OPA Engine",
+      "category": "identity",
+      "description": "Open Policy Agent providing unified policy enforcement across the stack with Rego policy language.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/opa-engine:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "SPIFFE SPIRE",
+      "category": "identity",
+      "description": "Framework for identity issuance and trust establishment in heterogeneous workloads.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/spiffe-spire:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Spire Server",
+      "category": "identity",
+      "description": "Identity provisioning server for SPIFFE standard providing workload attestation and SVID issuance.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/spire-server:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Vault OIDC",
+      "category": "identity",
+      "description": "HashiCorp Vault OIDC provider enabling dynamic secret management with identity federation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/vault-oidc:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Cert Manager ID",
+      "category": "identity",
+      "description": "Kubernetes certificate management controller automating TLS certificate provisioning and renewal.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cert-manager-id:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "HashiCorp Vault",
+      "category": "data",
+      "description": "Secrets management platform providing secure storage, dynamic secrets, encryption as a service, and identity management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/hashicorp-vault:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "SOPS Enc",
+      "category": "data",
+      "description": "Secrets management tool for encrypting configuration files with support for multiple key services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/sops-enc:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Age Encryption",
+      "category": "data",
+      "description": "Simple, modern file encryption tool using state-of-the-art elliptic curve cryptography.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/age-enc:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "GPG Agent",
+      "category": "data",
+      "description": "GNU Privacy Guard agent for managing cryptographic keys and performing encryption operations.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/gpg-agent:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Cryptomator",
+      "category": "data",
+      "description": "Open-source client-side encryption solution for cloud storage with transparent file encryption.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cryptomator:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "VeraCrypt",
+      "category": "data",
+      "description": "Free disk encryption software supporting AES, Serpent, and Twofish with plausible deniability.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/veracrypt:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "BitLocker",
+      "category": "data",
+      "description": "Microsoft full-disk encryption feature providing AES-256 encryption for Windows volumes.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/bitlocker:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "LUKS Crypto",
+      "category": "data",
+      "description": "Linux Unified Key Setup for disk encryption providing standard on-disk encryption format.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/luks-crypto:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "TLS Terminator",
+      "category": "data",
+      "description": "TLS termination proxy handling encryption and certificate management for backend services.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/tls-terminator:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Certbot ACME",
+      "category": "data",
+      "description": "Let's Encrypt certificate management client automating TLS certificate provisioning and renewal.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/certbot-acme:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Step CA",
+      "category": "data",
+      "description": "Private certificate authority for internal TLS with automatic certificate management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/step-ca:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Smallstep CA",
+      "category": "data",
+      "description": "Zero-trust certificate authority providing automated mTLS and SSH certificate management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/smallstep-ca:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "ZTrust CA",
+      "category": "data",
+      "description": "Internal certificate authority providing X.509 certificate lifecycle management.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/ztrust-ca:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "DLP Engine",
+      "category": "data",
+      "description": "Data loss prevention engine monitoring data flows and enforcing data protection policies.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/dlp-engine:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Falco",
+      "category": "cloud",
+      "description": "Cloud-native runtime security tool detecting anomalous activity in containers, Kubernetes, and hosts.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/falco:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Trivy",
+      "category": "cloud",
+      "description": "Comprehensive security scanner for containers, Kubernetes, IaC, and dependencies with vulnerability databases.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/trivy:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Checkov",
+      "category": "cloud",
+      "description": "Static analysis tool for infrastructure-as-code scanning against security best practices and compliance frameworks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/checkov:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Kube Bench",
+      "category": "cloud",
+      "description": "CIS Kubernetes Benchmark tool for automated security assessment of Kubernetes clusters.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/kube-bench:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Kube Hunter",
+      "category": "cloud",
+      "description": "Kubernetes security auditor that hunts for security weaknesses in Kubernetes clusters.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/kube-hunter:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Gatekeeper",
+      "category": "cloud",
+      "description": "Kubernetes admission controller enforcing policies using the Open Policy Agent constraint framework.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/gatekeeper:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Kyverno",
+      "category": "cloud",
+      "description": "Kubernetes-native policy management engine for validation, mutation, and generation of resources.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/kyverno:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "OPA Gatekeeper",
+      "category": "cloud",
+      "description": "Kubernetes admission webhook enforcing policies defined in Rego via the Open Policy Agent.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/opa-gatekeeper:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CloudSploit",
+      "category": "cloud",
+      "description": "Cloud security posture management tool identifying misconfigurations across AWS, Azure, and GCP.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cloudsploit:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Scout Suite",
+      "category": "cloud",
+      "description": "Multi-cloud security auditing tool providing visibility into security posture and configuration.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/scout-suite:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Prowler",
+      "category": "cloud",
+      "description": "AWS security assessment tool implementing CIS benchmarks and additional security checks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/prowler:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Pacu",
+      "category": "cloud",
+      "description": "AWS exploitation framework enabling offensive security testing against cloud environments.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/pacu:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Cloud Custodian",
+      "category": "cloud",
+      "description": "Rules engine for managing AWS, Azure, and GCP resources with policy-as-code approach.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cloud-custodian:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Wiz Connector",
+      "category": "cloud",
+      "description": "Cloud security platform connector for agentless vulnerability scanning and IaC scanning.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/wiz-connector:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "JSON Validator",
+      "category": "micro",
+      "description": "Strict JSON schema validation enforcing structural and type constraints on API inputs.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/json-validator:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "XML Sanitizer",
+      "category": "micro",
+      "description": "XML input sanitization preventing XXE injection and billion laughs attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/xml-sanitizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "HTML Purifier",
+      "category": "micro",
+      "description": "HTML content sanitization removing malicious scripts while preserving safe formatting.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/html-purifier:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "SQL Sanitizer",
+      "category": "micro",
+      "description": "SQL query parameterization and sanitization preventing SQL injection attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/sql-sanitizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "XSS Filter",
+      "category": "micro",
+      "description": "Cross-site scripting filter removing or encoding dangerous HTML/JavaScript content.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/xss-filter:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "CSRF Guard",
+      "category": "micro",
+      "description": "Cross-site request forgery protection using synchronized token pattern validation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/csrf-guard:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Input Trimmer",
+      "category": "micro",
+      "description": "Input length and character set enforcement preventing buffer overflow and injection attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/input-trimmer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Unicode Normalizer",
+      "category": "micro",
+      "description": "Unicode normalization and homoglyph detection preventing encoding-based bypass attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/unicode-normalizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Path Canonicalizer",
+      "category": "micro",
+      "description": "File path canonicalization preventing directory traversal and path confusion attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/path-canonicalizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Command Escaper",
+      "category": "micro",
+      "description": "Shell command argument escaping preventing command injection through user input.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/command-escaper:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "LDAP Sanitizer",
+      "category": "micro",
+      "description": "LDAP query sanitization preventing LDAP injection and directory traversal attacks.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/ldap-sanitizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Header Sanitizer",
+      "category": "micro",
+      "description": "HTTP header value sanitization preventing response splitting and header injection.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/header-sanitizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Cookie Guard",
+      "category": "micro",
+      "description": "Cookie attribute enforcement including Secure, HttpOnly, SameSite, and Path validation.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/cookie-guard:latest",
+      "config": "{}",
+      "autoDeploy": false
+    },
+    {
+      "name": "Query Sanitizer",
+      "category": "micro",
+      "description": "URL query parameter validation and sanitization preventing injection through query strings.",
+      "version": "10.0.0",
+      "status": "dormant",
+      "containerImage": "defensive/query-sanitizer:latest",
+      "config": "{}",
+      "autoDeploy": false
+    }
+  ],
+  "micro_tools": [
+    {
+      "name": "sql_injection_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive sql injection guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "xss_detector",
+      "category": "input_validation",
+      "description": "Micro-defensive xss detector module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "command_injection_blocker",
+      "category": "input_validation",
+      "description": "Micro-defensive command injection blocker module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "path_traversal_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive path traversal guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "ldap_injection_filter",
+      "category": "input_validation",
+      "description": "Micro-defensive ldap injection filter module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "xml_injection_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive xml injection guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "ssti_detector",
+      "category": "input_validation",
+      "description": "Micro-defensive ssti detector module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "template_injection_blocker",
+      "category": "input_validation",
+      "description": "Micro-defensive template injection blocker module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "regex_dos_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive regex dos guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "null_byte_filter",
+      "category": "input_validation",
+      "description": "Micro-defensive null byte filter module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "crlf_injection_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive crlf injection guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "http_response_splitting_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive http response splitting guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "mail_header_injection_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive mail header injection guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "log4j_detector",
+      "category": "input_validation",
+      "description": "Micro-defensive log4j detector module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "date_injection_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive date injection guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "number_range_validator",
+      "category": "input_validation",
+      "description": "Micro-defensive number range validator module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "email_format_guard",
+      "category": "input_validation",
+      "description": "Micro-defensive email format guard module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "url_validator",
+      "category": "input_validation",
+      "description": "Micro-defensive url validator module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "ip_address_validator",
+      "category": "input_validation",
+      "description": "Micro-defensive ip address validator module providing input validation protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "html_entity_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive html entity encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "json_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive json encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "xml_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive xml encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "javascript_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive javascript encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "css_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive css encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "url_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive url encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "base64_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive base64 encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "markdown_sanitizer",
+      "category": "output_encoding",
+      "description": "Micro-defensive markdown sanitizer module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "svg_sanitizer",
+      "category": "output_encoding",
+      "description": "Micro-defensive svg sanitizer module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "pdf_sanitizer",
+      "category": "output_encoding",
+      "description": "Micro-defensive pdf sanitizer module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "csv_sanitizer",
+      "category": "output_encoding",
+      "description": "Micro-defensive csv sanitizer module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "yaml_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive yaml encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "xml_attr_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive xml attr encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "http_header_encoder",
+      "category": "output_encoding",
+      "description": "Micro-defensive http header encoder module providing output encoding protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "filename_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive filename sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "user_input_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive user input sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "html_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive html sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "rtf_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive rtf sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "xml_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive xml sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "json_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive json sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "yaml_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive yaml sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "ldap_dn_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive ldap dn sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "sql_query_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive sql query sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "os_command_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive os command sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "http_body_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive http body sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive cookie sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "header_value_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive header value sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "query_param_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive query param sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "path_component_sanitizer",
+      "category": "sanitization",
+      "description": "Micro-defensive path component sanitizer module providing sanitization protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "hmac_verifier",
+      "category": "integrity",
+      "description": "Micro-defensive hmac verifier module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "digital_signature_verifier",
+      "category": "integrity",
+      "description": "Micro-defensive digital signature verifier module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "checksum_validator",
+      "category": "integrity",
+      "description": "Micro-defensive checksum validator module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "file_integrity_monitor",
+      "category": "integrity",
+      "description": "Micro-defensive file integrity monitor module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "config_integrity_guard",
+      "category": "integrity",
+      "description": "Micro-defensive config integrity guard module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "code_signing_verifier",
+      "category": "integrity",
+      "description": "Micro-defensive code signing verifier module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "dependency_hash_checker",
+      "category": "integrity",
+      "description": "Micro-defensive dependency hash checker module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "tamper_detection_guard",
+      "category": "integrity",
+      "description": "Micro-defensive tamper detection guard module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "runtime_integrity_checker",
+      "category": "integrity",
+      "description": "Micro-defensive runtime integrity checker module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "memory_integrity_guard",
+      "category": "integrity",
+      "description": "Micro-defensive memory integrity guard module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "database_integrity_checker",
+      "category": "integrity",
+      "description": "Micro-defensive database integrity checker module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "api_response_validator",
+      "category": "integrity",
+      "description": "Micro-defensive api response validator module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "webhook_signature_verifier",
+      "category": "integrity",
+      "description": "Micro-defensive webhook signature verifier module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "jwt_validator",
+      "category": "integrity",
+      "description": "Micro-defensive jwt validator module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "certificate_chain_verifier",
+      "category": "integrity",
+      "description": "Micro-defensive certificate chain verifier module providing integrity protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "api_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive api rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "login_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive login rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "password_reset_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive password reset limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "email_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive email rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "file_upload_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive file upload limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "search_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive search rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "export_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive export rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "registration_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive registration limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "otp_request_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive otp request limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "password_change_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive password change limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "token_refresh_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive token refresh limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "ip_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive ip rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "user_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive user rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "endpoint_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive endpoint rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "adaptive_rate_limiter",
+      "category": "rate_limiting",
+      "description": "Micro-defensive adaptive rate limiter module providing rate limiting protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_strict",
+      "category": "cors",
+      "description": "Micro-defensive cors strict module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_permissive",
+      "category": "cors",
+      "description": "Micro-defensive cors permissive module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_credential_guard",
+      "category": "cors",
+      "description": "Micro-defensive cors credential guard module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_method_guard",
+      "category": "cors",
+      "description": "Micro-defensive cors method guard module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_header_guard",
+      "category": "cors",
+      "description": "Micro-defensive cors header guard module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_origin_validator",
+      "category": "cors",
+      "description": "Micro-defensive cors origin validator module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_preflight_handler",
+      "category": "cors",
+      "description": "Micro-defensive cors preflight handler module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_wildcard_blocker",
+      "category": "cors",
+      "description": "Micro-defensive cors wildcard blocker module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_subdomain_checker",
+      "category": "cors",
+      "description": "Micro-defensive cors subdomain checker module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cors_protocol_enforcer",
+      "category": "cors",
+      "description": "Micro-defensive cors protocol enforcer module providing cors protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "csp_header_manager",
+      "category": "header_security",
+      "description": "Micro-defensive csp header manager module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "hsts_header_setter",
+      "category": "header_security",
+      "description": "Micro-defensive hsts header setter module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "x_frame_options_guard",
+      "category": "header_security",
+      "description": "Micro-defensive x frame options guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "x_content_type_guard",
+      "category": "header_security",
+      "description": "Micro-defensive x content type guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "x_xss_protection_setter",
+      "category": "header_security",
+      "description": "Micro-defensive x xss protection setter module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "referrer_policy_manager",
+      "category": "header_security",
+      "description": "Micro-defensive referrer policy manager module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "permission_policy_guard",
+      "category": "header_security",
+      "description": "Micro-defensive permission policy guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cross_origin_opener_guard",
+      "category": "header_security",
+      "description": "Micro-defensive cross origin opener guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cross_origin_resource_guard",
+      "category": "header_security",
+      "description": "Micro-defensive cross origin resource guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "content_security_report",
+      "category": "header_security",
+      "description": "Micro-defensive content security report module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "strict_transport_guard",
+      "category": "header_security",
+      "description": "Micro-defensive strict transport guard module providing header security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "http_only_enforcer",
+      "category": "cookie_security",
+      "description": "Micro-defensive http only enforcer module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "secure_flag_setter",
+      "category": "cookie_security",
+      "description": "Micro-defensive secure flag setter module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "same_site_strict",
+      "category": "cookie_security",
+      "description": "Micro-defensive same site strict module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "same_site_lax",
+      "category": "cookie_security",
+      "description": "Micro-defensive same site lax module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "same_site_none",
+      "category": "cookie_security",
+      "description": "Micro-defensive same site none module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_domain_validator",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie domain validator module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_path_validator",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie path validator module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_max_age_setter",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie max age setter module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_prefix_checker",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie prefix checker module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_expiration_guard",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie expiration guard module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    },
+    {
+      "name": "cookie_rotation_handler",
+      "category": "cookie_security",
+      "description": "Micro-defensive cookie rotation handler module providing cookie security protection against targeted attacks.",
+      "status": "dormant",
+      "config": "{}",
+      "isActive": true
+    }
+  ],
+  "sensors": [
+    {
+      "name": "AESA P-2D Radar",
+      "type": "radar",
+      "subtype": "aesa_p2d",
+      "description": "Active Electronically Scanned Array radar providing 360-degree surveillance with 450km detection range and multi-target tracking.",
+      "status": "offline",
+      "config": "{\"resolution\": 1.5, \"rotation_speed\": 12, \"modes\": [\"surveillance\", \"tracking\", \"weather\"]}",
+      "location": "Sector A",
+      "range": 450.0,
+      "frequency": "3.0 GHz (S-band)",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "Patriot Radar",
+      "type": "radar",
+      "subtype": "patriot_radar",
+      "description": "Phased array radar system for air defense with missile tracking and engagement capabilities up to 180km range.",
+      "status": "offline",
+      "config": "{\"modes\": [\"search\", \"track\", \"engage\"], \"targets_max\": 125}",
+      "location": "Sector A",
+      "range": 180.0,
+      "frequency": "4.0 GHz (C-band)",
+      "sensitivity": 0.9
+    },
+    {
+      "name": "Green Dar Radar",
+      "type": "radar",
+      "subtype": "green_dar_radar",
+      "description": "Ground-based surveillance radar optimized for low-altitude drone and UAV detection with 40km effective range.",
+      "status": "offline",
+      "config": "{\"uav_detection\": true, \"altitude_range\": \"0-5000m\"}",
+      "location": "Sector A",
+      "range": 40.0,
+      "frequency": "9.4 GHz (X-band)",
+      "sensitivity": 0.75
+    },
+    {
+      "name": "AN/TPS-80",
+      "type": "radar",
+      "subtype": "an_tps_80",
+      "description": "Multi-mission radar system providing air surveillance, air traffic control, and short-range air defense capabilities.",
+      "status": "offline",
+      "config": "{\"modes\": 4, \"rotation_rpm\": 15}",
+      "location": "Sector A",
+      "range": 370.0,
+      "frequency": "2.0-4.0 GHz (S/C-band)",
+      "sensitivity": 0.88
+    },
+    {
+      "name": "CAPER Radar",
+      "type": "radar",
+      "subtype": "caper_radar",
+      "description": "Compact air surveillance radar for perimeter protection with ground clutter rejection and low-RCS target detection.",
+      "status": "offline",
+      "config": "{\"portable\": true, \"power_consumption\": \"350W\"}",
+      "location": "Sector A",
+      "range": 25.0,
+      "frequency": "10.0 GHz (X-band)",
+      "sensitivity": 0.7
+    },
+    {
+      "name": "Ground Master 400",
+      "type": "radar",
+      "subtype": "ground_master_400",
+      "description": "Long-range air defense radar with 450km range and advanced electronic counter-countermeasure capabilities.",
+      "status": "offline",
+      "config": "{\"eccm\": true, \"mobility\": \"tactical\"}",
+      "location": "Sector A",
+      "range": 450.0,
+      "frequency": "1.3-1.4 GHz (L-band)",
+      "sensitivity": 0.92
+    },
+    {
+      "name": "Sharp Eye Radar",
+      "type": "radar",
+      "subtype": "sharp_eye",
+      "description": "Short-range surveillance radar for point and area protection with automatic target tracking.",
+      "status": "offline",
+      "config": "{\"auto_track\": true, \"interference_rejection\": true}",
+      "location": "Sector A",
+      "range": 15.0,
+      "frequency": "9.2 GHz (X-band)",
+      "sensitivity": 0.65
+    },
+    {
+      "name": "Kronos Radar",
+      "type": "radar",
+      "subtype": "kronos_radar",
+      "description": "3D multi-beam naval radar providing simultaneous air and surface surveillance with ballistic missile detection.",
+      "status": "offline",
+      "config": "{\"naval\": true, \"3d_coverage\": true, \"missile_detection\": true}",
+      "location": "Sector A",
+      "range": 250.0,
+      "frequency": "2.0-4.0 GHz (S/C-band)",
+      "sensitivity": 0.87
+    },
+    {
+      "name": "AN/SQS-53",
+      "type": "sonar",
+      "subtype": "an_sqs_53",
+      "description": "Advanced hull-mounted active/passive sonar system with underwater target detection and torpedo defense capabilities.",
+      "status": "offline",
+      "config": "{\"type\": \"bow_array\", \"modes\": [\"active\", \"passive\"]}",
+      "location": "Sector A",
+      "range": 130.0,
+      "frequency": "3.5 kHz (LF)",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "Sonar 2087",
+      "type": "sonar",
+      "subtype": "sonar_2087",
+      "description": "Towed array sonar system providing long-range passive detection of submarines and underwater threats.",
+      "status": "offline",
+      "config": "{\"type\": \"towed_array\", \"stream_length\": \"1000m\"}",
+      "location": "Sector A",
+      "range": 200.0,
+      "frequency": "0.1-3.0 kHz (VLF-LF)",
+      "sensitivity": 0.9
+    },
+    {
+      "name": "Thales Kingklip",
+      "type": "sonar",
+      "subtype": "thales_kingklip",
+      "description": "Mine and obstacle avoidance sonar for surface vessels operating in shallow and confined waters.",
+      "status": "offline",
+      "config": "{\"type\": \"hull_mounted\", \"minesweeper\": true}",
+      "location": "Sector A",
+      "range": 2.0,
+      "frequency": "100 kHz (HF)",
+      "sensitivity": 0.8
+    },
+    {
+      "name": "Atlas Elektronik UTG",
+      "type": "sonar",
+      "subtype": "atlas_elektronik_utg",
+      "description": "Underwater target guidance sonar for torpedo firing solutions and underwater threat assessment.",
+      "status": "offline",
+      "config": "{\"type\": \"submarine\", \"torpedo_guidance\": true}",
+      "location": "Sector A",
+      "range": 30.0,
+      "frequency": "8.0 kHz (MF)",
+      "sensitivity": 0.82
+    },
+    {
+      "name": "Bluefin Sonar",
+      "type": "sonar",
+      "subtype": "bluefin_sonar",
+      "description": "Synthetic aperture sonar for high-resolution seafloor imaging and underwater object detection.",
+      "status": "offline",
+      "config": "{\"type\": \"auv_mounted\", \"resolution\": \"10cm\"}",
+      "location": "Sector A",
+      "range": 1.5,
+      "frequency": "120 kHz (HF)",
+      "sensitivity": 0.75
+    },
+    {
+      "name": "Knifefish",
+      "type": "sonar",
+      "subtype": "knifefish",
+      "description": "Unmanned underwater mine countermeasures sonar system with automatic target recognition.",
+      "status": "offline",
+      "config": "{\"type\": \"uuv\", \"atr\": true, \"mine_detection\": true}",
+      "location": "Sector A",
+      "range": 3.0,
+      "frequency": "100 kHz (HF)",
+      "sensitivity": 0.88
+    },
+    {
+      "name": "Seabed Mapper",
+      "type": "sonar",
+      "subtype": "seabed_mapper",
+      "description": "Multibeam echo sounder for high-resolution seafloor mapping and underwater terrain surveying.",
+      "status": "offline",
+      "config": "{\"type\": \"survey\", \"swath\": \"120 degrees\"}",
+      "location": "Sector A",
+      "range": 0.5,
+      "frequency": "200 kHz (VHF)",
+      "sensitivity": 0.7
+    },
+    {
+      "name": "Towed Array Sonar",
+      "type": "sonar",
+      "subtype": "towed_array_sonar",
+      "description": "Long passive towed array for wide-area submarine detection and acoustic intelligence gathering.",
+      "status": "offline",
+      "config": "{\"type\": \"towed\", \"array_length\": \"2000m\"}",
+      "location": "Sector A",
+      "range": 300.0,
+      "frequency": "0.05-2.0 kHz (VLF-LF)",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "Velodyne VLP-16",
+      "type": "lidar",
+      "subtype": "velodyne_vlp16",
+      "description": "16-channel LiDAR sensor providing 3D point cloud data for perimeter surveillance and drone detection.",
+      "status": "offline",
+      "config": "{\"channels\": 16, \"points_per_second\": 300000, \"fps\": 20}",
+      "location": "Sector A",
+      "range": 100.0,
+      "frequency": "903 nm (NIR)",
+      "sensitivity": 0.8
+    },
+    {
+      "name": "Ouster OS1-128",
+      "type": "lidar",
+      "subtype": "ouster_os1_128",
+      "description": "128-channel high-resolution LiDAR for detailed 3D mapping and object tracking in security applications.",
+      "status": "offline",
+      "config": "{\"channels\": 128, \"points_per_second\": 2600000, \"fps\": 20}",
+      "location": "Sector A",
+      "range": 120.0,
+      "frequency": "850-940 nm (NIR)",
+      "sensitivity": 0.9
+    },
+    {
+      "name": "Livox Mid-360",
+      "type": "lidar",
+      "subtype": "livox_mid_360",
+      "description": "Hybrid solid-state LiDAR providing non-repetitive scanning pattern for comprehensive area coverage.",
+      "status": "offline",
+      "config": "{\"scanning_pattern\": \"non_repetitive\", \"fov\": 360}",
+      "location": "Sector A",
+      "range": 40.0,
+      "frequency": "905 nm (NIR)",
+      "sensitivity": 0.75
+    },
+    {
+      "name": "Hesai XT32",
+      "type": "lidar",
+      "subtype": "hesai_xt32",
+      "description": "32-channel automotive-grade LiDAR for vehicle perimeter security and object detection.",
+      "status": "offline",
+      "config": "{\"channels\": 32, \"range_accuracy\": \"0.05m\"}",
+      "location": "Sector A",
+      "range": 150.0,
+      "frequency": "905 nm (NIR)",
+      "sensitivity": 0.82
+    },
+    {
+      "name": "RoboSense RS-16",
+      "type": "lidar",
+      "subtype": "robosense_rs16",
+      "description": "16-channel LiDAR sensor for intelligent transportation and security monitoring.",
+      "status": "offline",
+      "config": "{\"channels\": 16, \"protection_level\": \"IP67\"}",
+      "location": "Sector A",
+      "range": 150.0,
+      "frequency": "905 nm (NIR)",
+      "sensitivity": 0.78
+    },
+    {
+      "name": "Innoviz LiDAR One",
+      "type": "lidar",
+      "subtype": "innoviz_lidar_one",
+      "description": "Solid-state LiDAR with high-resolution long-range detection for border security applications.",
+      "status": "offline",
+      "config": "{\"type\": \"solid_state\", \"resolution\": \"0.1 degree\"}",
+      "location": "Sector A",
+      "range": 250.0,
+      "frequency": "940 nm (NIR)",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "Seismo-Acoustic Sensor",
+      "type": "acoustic",
+      "subtype": "seismo_acoustic",
+      "description": "Combined seismic and acoustic sensor for detecting footsteps, vehicles, and digging activity near perimeters.",
+      "status": "offline",
+      "config": "{\"detection_types\": [\"footstep\", \"vehicle\", \"digging\"], \"deployment\": \"ground\"}",
+      "location": "Sector A",
+      "range": 0.5,
+      "frequency": "20-20000 Hz",
+      "sensitivity": 0.7
+    },
+    {
+      "name": "Gunshot Detector",
+      "type": "acoustic",
+      "subtype": "gunshot_detector",
+      "description": "Acoustic gunshot detection and localization system with real-time alerting and 3D position calculation.",
+      "status": "offline",
+      "config": "{\"detection_range\": \"2km\", \"localization_accuracy\": \"5m\"}",
+      "location": "Sector A",
+      "range": 2.0,
+      "frequency": "100-20000 Hz",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "Drone Acoustic Locator",
+      "type": "acoustic",
+      "subtype": "drone_acoustic_locator",
+      "description": "Multi-microphone array for detecting and localizing small UAVs based on rotor noise signature.",
+      "status": "offline",
+      "config": "{\"microphones\": 8, \"detection_range\": \"500m\"}",
+      "location": "Sector A",
+      "range": 1.0,
+      "frequency": "200-20000 Hz",
+      "sensitivity": 0.75
+    },
+    {
+      "name": "Vehicle Acoustic Classifier",
+      "type": "acoustic",
+      "subtype": "vehicle_acoustic_classifier",
+      "description": "Acoustic vehicle classification system identifying vehicle type, direction, and speed from engine noise.",
+      "status": "offline",
+      "config": "{\"classifications\": [\"car\", \"truck\", \"motorcycle\", \"tank\"], \"count_direction\": true}",
+      "location": "Sector A",
+      "range": 0.3,
+      "frequency": "50-5000 Hz",
+      "sensitivity": 0.65
+    },
+    {
+      "name": "Ambient Noise Monitor",
+      "type": "acoustic",
+      "subtype": "ambient_noise_monitor",
+      "description": "Environmental noise monitoring station for baseline establishment and anomaly detection in protected zones.",
+      "status": "offline",
+      "config": "{\"bands\": [\"A\", \"C\", \"Z\"], \"logging_interval\": \"1s\"}",
+      "location": "Sector A",
+      "range": 1.0,
+      "frequency": "20-20000 Hz",
+      "sensitivity": 0.6
+    },
+    {
+      "name": "SIGINT Interceptor",
+      "type": "ew",
+      "subtype": "sigint_interceptor",
+      "description": "Signals intelligence interceptor covering VHF/UHF/SHF bands for communication and electronic signal collection.",
+      "status": "offline",
+      "config": "{\"bands\": [\"VHF\", \"UHF\", \"SHF\"], \"demod\": [\"AM\", \"FM\", \"SSB\", \"digital\"]}",
+      "location": "Sector A",
+      "range": 500.0,
+      "frequency": "30 MHz - 18 GHz",
+      "sensitivity": 0.9
+    },
+    {
+      "name": "COMINT Analyzer",
+      "type": "ew",
+      "subtype": "comint_analyzer",
+      "description": "Communications intelligence analyzer for real-time interception and classification of voice and data communications.",
+      "status": "offline",
+      "config": "{\"capabilities\": [\"intercept\", \"classify\", \"locate\"], \"protocols\": [\"GSM\", \"LTE\", \"VHF\"]}",
+      "location": "Sector A",
+      "range": 300.0,
+      "frequency": "30 MHz - 3 GHz",
+      "sensitivity": 0.85
+    },
+    {
+      "name": "ELINT Scanner",
+      "type": "ew",
+      "subtype": "elint_scanner",
+      "description": "Electronic intelligence scanner for radar emitter detection, identification, and tracking in the operational area.",
+      "status": "offline",
+      "config": "{\"radar_types\": [\"surveillance\", \"tracking\", \"fire_control\"], \"pulse_analysis\": true}",
+      "location": "Sector A",
+      "range": 400.0,
+      "frequency": "2-18 GHz",
+      "sensitivity": 0.88
+    },
+    {
+      "name": "ECM Jammer",
+      "type": "ew",
+      "subtype": "ecm_jammer",
+      "description": "Electronic countermeasures jammer for denying adversary communications and radar within operational radius.",
+      "status": "offline",
+      "config": "{\"jamming_types\": [\"noise\", \"deceptive\", \"DRFM\"], \"power\": \"500W\"}",
+      "location": "Sector A",
+      "range": 50.0,
+      "frequency": "100 MHz - 6 GHz",
+      "sensitivity": 0.8
+    }
+  ]
+}

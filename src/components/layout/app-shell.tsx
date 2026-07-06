@@ -3,6 +3,7 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { BabiryeSidebar } from "./babirye-sidebar";
 import { BabiryeHeader } from "./babirye-header";
+import { CommandPalette } from "./command-palette";
 import { useAppStore } from "@/stores/app-store";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </SidebarInset>
+      <CommandPalette />
     </SidebarProvider>
   );
 }
