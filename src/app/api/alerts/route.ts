@@ -62,6 +62,14 @@ export async function GET(request: NextRequest) {
     if (type) where.type = type;
     const status = searchParams.get('status');
     if (status) where.status = status;
+    const search = searchParams.get('search');
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+        { source: { contains: search } },
+      ];
+    }
 
     const [alerts, total] = await Promise.all([
       db.securityAlert.findMany({

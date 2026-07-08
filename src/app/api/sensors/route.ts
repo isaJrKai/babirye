@@ -18,19 +18,38 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const typeFilter = searchParams.get('type');
+    const statusFilter = searchParams.get('status');
+    const search = searchParams.get('search');
+    const page = Math.max(1, Number(searchParams.get('page')) || 1);
+    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 50));
+    const skip = (page - 1) * limit;
 
-    const where = typeFilter ? { type: typeFilter } : {};
+    const where: Record<string, unknown> = {};
+    if (typeFilter) where.type = typeFilter;
+    if (statusFilter) where.status = statusFilter;
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { description: { contains: search } },
+        { location: { contains: search } },
+      ];
+    }
 
-    const sensors = await db.sensor.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        readings: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
+    const [sensors, total] = await Promise.all([
+      db.sensor.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          readings: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
         },
-      },
-    });
+      }),
+      db.sensor.count({ where }),
+    ]);
 
     const result = sensors.map((s) => ({
       id: s.id,
@@ -60,7 +79,10 @@ export async function GET(request: NextRequest) {
         : null,
     }));
 
-    return NextResponse.json({ sensors: result, total: result.length });
+    return NextResponse.json({
+      sensors: result,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('Sensors GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState, lazy, Suspense } from "react";
-import { Shield, Loader2 } from "lucide-react";
+import { lazy, Suspense, useSyncExternalStore } from "react";
 import { AppShell } from "@/components/layout/app-shell";
-import { useAppStore } from "@/stores/app-store";
 
 const LoginPage = lazy(() => import("@/pages/login-page").then(m => ({ default: m.default })));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page").then(m => ({ default: m.default })));
@@ -54,64 +52,29 @@ const PAGE_MAP: Record<string, React.LazyExoticComponent<React.ComponentType>> =
 function PageFallback() {
   return (
     <div className="flex items-center justify-center h-64">
-      <Loader2 className="h-8 w-8 text-primary/50 animate-spin" />
+      <div className="h-8 w-8 border-2 border-primary/30 border-t-primary animate-spin rounded-full" />
     </div>
   );
 }
 
+// useSyncExternalStore to detect token in localStorage.
+// On server (SSR): always returns "" — no hydration mismatch.
+// On client: returns actual token or "".
+// When token changes (via login/logout), storage event triggers re-render.
+function getTokenSnapshot(): string {
+  try { return localStorage.getItem("babirye_token") || ""; } catch { return ""; }
+}
+function subscribeToToken(cb: () => void): () => void {
+  window.addEventListener("storage", cb);
+  return () => window.removeEventListener("storage", cb);
+}
+
 export default function Home() {
   const { currentPage } = useAppStore();
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  // getTokenSnapshot is used for both server and client — no hydration mismatch possible
+  const hasToken = useSyncExternalStore(subscribeToToken, getTokenSnapshot, getTokenSnapshot).length > 0;
 
-  useEffect(() => {
-    const token = localStorage.getItem("babirye_token");
-    if (!token) {
-      requestAnimationFrame(() => setAuthenticated(false));
-      return;
-    }
-
-    let cancelled = false;
-    fetch("/api/auth?view=me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.ok) {
-          res.json().then((u) => {
-            if (cancelled) return;
-            const store = useAppStore.getState();
-            store.setUser({
-              id: u.id as string,
-              name: (u.name as string) || (u.email as string),
-              email: u.email as string,
-              role: u.role as string,
-              clearanceLevel: (u.role as string) === "admin" ? 5 : (u.role as string) === "operator" ? 4 : 3,
-            });
-            setAuthenticated(true);
-          });
-        } else {
-          localStorage.removeItem("babirye_token");
-          setAuthenticated(false);
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setAuthenticated(false);
-      });
-
-    return () => { cancelled = true; };
-  }, []);
-
-  if (authenticated === null) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Shield className="h-12 w-12 text-primary/30 mx-auto animate-pulse" />
-          <p className="text-xs text-muted-foreground font-mono tracking-widest">AUTHENTICATING...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authenticated) {
+  if (!hasToken) {
     return (
       <Suspense fallback={<PageFallback />}>
         <LoginPage />
@@ -120,7 +83,6 @@ export default function Home() {
   }
 
   const PageComponent = PAGE_MAP[currentPage] || DashboardPage;
-
   return (
     <AppShell>
       <Suspense fallback={<PageFallback />}>

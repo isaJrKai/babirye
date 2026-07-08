@@ -32,13 +32,35 @@ export async function GET(request: NextRequest) {
     // Default: list weapons
     const where: Record<string, unknown> = {};
     const category = searchParams.get("category");
-    if (category) where.category = category;
+    const status = searchParams.get("status");
+    const search = searchParams.get("search");
+    const page = Math.max(1, Number(searchParams.get("page")) || 1);
+    const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit")) || 50));
+    const skip = (page - 1) * limit;
 
-    const weapons = await db.weapon.findMany({
-      where,
-      orderBy: { name: "asc" },
+    if (category) where.category = category;
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { caliber: { contains: search } },
+        { serialNumber: { contains: search } },
+      ];
+    }
+
+    const [weapons, total] = await Promise.all([
+      db.weapon.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip,
+        take: limit,
+      }),
+      db.weapon.count({ where }),
+    ]);
+    return NextResponse.json({
+      weapons,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
-    return NextResponse.json(weapons);
   } catch (error) {
     console.error("Weapons GET error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

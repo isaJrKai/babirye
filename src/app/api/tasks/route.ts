@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const type = searchParams.get('type');
     const agentId = searchParams.get('agentId');
+    const search = searchParams.get('search');
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
 
@@ -44,6 +45,13 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (type) where.type = type;
     if (agentId) where.agentId = agentId;
+    if (search) {
+      where.OR = [
+        { id: { contains: search } },
+        { type: { contains: search } },
+        { errorMessage: { contains: search } },
+      ];
+    }
 
     const [tasks, total] = await Promise.all([
       db.task.findMany({

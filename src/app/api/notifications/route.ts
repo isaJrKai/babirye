@@ -46,13 +46,24 @@ export async function GET(request: NextRequest) {
       where.isRead = isReadParam === 'true';
     }
 
-    const notifications = await db.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+    const page = Math.max(1, Number(searchParams.get('page')) || 1);
+    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 50));
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json(notifications);
+    const [notifications, total] = await Promise.all([
+      db.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      db.notification.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      data: notifications,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error('Notifications GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

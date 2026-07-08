@@ -17,9 +17,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const subsystem = searchParams.get("subsystem");
+    const search = searchParams.get("search");
 
     const where: Record<string, unknown> = {};
     if (subsystem) where.subsystem = subsystem;
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { content: { contains: search } },
+        { subsystem: { contains: search } },
+      ];
+    }
 
     const constitutions = await db.constitution.findMany({
       where,
