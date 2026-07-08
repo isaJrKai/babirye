@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useSyncExternalStore } from "react";
 import { AppShell } from "@/components/layout/app-shell";
+import { useAppStore } from "@/stores/app-store";
 
 const LoginPage = lazy(() => import("@/pages/login-page").then(m => ({ default: m.default })));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page").then(m => ({ default: m.default })));
