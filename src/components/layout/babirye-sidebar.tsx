@@ -61,14 +61,14 @@ const navSections: NavSection[] = [
     items: [
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "agents", label: "Agents", icon: Bot },
-      { id: "tasks", label: "Tasks", icon: ListTodo, badge: 12, badgeVariant: "default" },
+      { id: "tasks", label: "Tasks", icon: ListTodo },
     ],
   },
   {
     label: "INTELLIGENCE",
     items: [
       { id: "expert-council", label: "Expert Council", icon: Users },
-      { id: "potentials", label: "Potentials", icon: Zap, badge: 3, badgeVariant: "success" },
+      { id: "potentials", label: "Potentials", icon: Zap },
       { id: "intel-feeds", label: "Intel Feeds", icon: Rss },
     ],
   },
@@ -84,7 +84,7 @@ const navSections: NavSection[] = [
   {
     label: "PHYSICAL",
     items: [
-      { id: "sensors", label: "Sensors", icon: Radio, badge: 8, badgeVariant: "warning" },
+      { id: "sensors", label: "Sensors", icon: Radio },
       { id: "vip-protection", label: "VIP Protection", icon: Crown },
     ],
   },
@@ -92,7 +92,7 @@ const navSections: NavSection[] = [
     label: "SYSTEM",
     items: [
       { id: "self-attack-wall", label: "Self-Attack Wall", icon: Lock },
-      { id: "alerts", label: "Alerts", icon: Bell, badge: 5, badgeVariant: "destructive" },
+      { id: "alerts", label: "Alerts", icon: Bell },
       { id: "audit-logs", label: "Audit Logs", icon: FileText },
       { id: "spa-gateways", label: "SPA Gateways", icon: Network },
       { id: "reports", label: "Reports", icon: FileBarChart },

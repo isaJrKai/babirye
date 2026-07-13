@@ -1,0 +1,530 @@
+     1→"""BABIRYE Potentials Engine — 310 named capabilities across 5 categories.
+     2→
+     3→Categories:
+     4→    intelligence_expansion (54 potentials)
+     5→    offensive_expansion (66 potentials)
+     6→    defensive_expansion (64 potentials)
+     7→    physical_security_expansion (66 potentials)
+     8→    vip_protection_expansion (60 potentials)
+     9→"""
+    10→from typing import Optional, Dict, List, Any
+    11→from ..core.logger import get_logger
+    12→from ..core.expert_council import expert_council
+    13→
+    14→logger = get_logger("defensive.potentials")
+    15→
+    16→
+    17→class PotentialsEngine:
+    18→    """Potentials engine managing 310 named capabilities across 5 categories:
+    19→    Intelligence Expansion, Offensive Expansion, Defensive Expansion,
+    20→    Physical Security Expansion, VIP Protection Expansion.
+    21→
+    22→    Every potential is stored in the class-level POTENTIALS dictionary keyed
+    23→    by its slug, with ``category`` and ``description`` fields.
+    24→    """
+    25→
+    26→    # ── Category: intelligence_expansion (54) ─────────────────────────
+    27→    _IE = {
+    28→        "osint_passive": "Passive OSINT collection from public sources",
+    29→        "osint_social": "Social media intelligence gathering",
+    30→        "osint_domain": "Domain and DNS intelligence",
+    31→        "osint_email": "Email address intelligence and breach lookup",
+    32→        "osint_username": "Cross-platform username enumeration",
+    33→        "osint_phone": "Phone number reconnaissance",
+    34→        "osint_ip": "IP address geolocation and reputation",
+    35→        "osint_corporate": "Corporate registry and filing research",
+    36→        "osint_geospatial": "Geospatial intelligence from satellite imagery",
+    37→        "dark_web_monitor": "Dark web monitoring and alerting",
+    38→        "threat_feed_aggregate": "Multi-source threat feed aggregation",
+    39→        "ioc_correlation": "IOC correlation across multiple data sources",
+    40→        "apt_tracking": "APT group tracking and attribution",
+    41→        "malware_intel": "Malware intelligence and family tracking",
+    42→        "vulnerability_monitor": "Real-time vulnerability monitoring and scoring",
+    43→        "exploit_intel": "Exploit availability intelligence",
+    44→        "credential_monitor": "Credential breach monitoring and alerting",
+    45→        "data_leak_detect": "Data leak detection on paste sites and repos",
+    46→        "brand_monitor": "Brand impersonation and typosquatting detection",
+    47→        "sentiment_analysis": "Public sentiment analysis for threat assessment",
+    48→        "geo_political_risk": "Geopolitical risk assessment for security planning",
+    49→        "supply_chain_intel": "Supply chain risk intelligence",
+    50→        "financial_fraud_detect": "Financial fraud pattern detection",
+    51→        "insider_threat_profile": "Insider threat behavioral profiling",
+    52→        "social_graph_analysis": "Social network graph analysis",
+    53→        "communication_pattern": "Communication pattern analysis for threat detection",
+    54→        "temporal_analysis": "Temporal pattern analysis of security events",
+    55→        "entity_resolution": "Cross-source entity resolution and deduplication",
+    56→        "knowledge_graph_build": "Security knowledge graph construction",
+    57→        "predictive_threat": "Predictive threat modeling",
+    58→        "scenario_modeling": "Attack scenario modeling and simulation",
+    59→        "threat_hunting_rules": "Automated threat hunting rule generation",
+    60→        "behavior_baselining": "Network and user behavior baselining",
+    61→        "anomaly_detection_rules": "Statistical anomaly detection rule generation",
+    62→        "data_fusion": "Multi-source intelligence data fusion",
+    63→        "report_generation": "Automated intelligence report generation",
+    64→        "briefing_prep": "Security briefing preparation automation",
+    65→        "compliance_mapping": "Compliance framework mapping and gap analysis",
+    66→        "regulatory_tracking": "Regulatory change tracking and impact assessment",
+    67→        "risk_scoring": "Multi-factor risk scoring engine",
+    68→        "asset_discovery": "Automated asset and service discovery",
+    69→        "attack_surface_map": "External attack surface mapping",
+    70→        "exposure_assessment": "Digital exposure assessment",
+    71→        "shadow_it_detect": "Shadow IT detection and inventory",
+    72→        "cloud_asset_inventory": "Cloud asset inventory and classification",
+    73→        "api_discovery": "External API endpoint discovery",
+    74→        "subdomain_enum": "Comprehensive subdomain enumeration",
+    75→        "certificate_monitor": "SSL/TLS certificate monitoring and alerts",
+    76→        "dns_monitor": "DNS record change monitoring",
+    77→        "whois_monitor": "WHOIS change monitoring for owned domains",
+    78→        "reputation_monitor": "Brand and IP reputation monitoring",
+    79→        "competitor_intel": "Competitive security posture intelligence",
+    80→        "market_threat_landscape": "Market-specific threat landscape analysis",
+    81→    }
+    82→
+    83→    # ── Category: offensive_expansion (66) ────────────────────────────
+    84→    _OE = {
+    85→        "external_pentest": "External network penetration testing",
+    86→        "internal_pentest": "Internal network penetration testing",
+    87→        "web_app_test": "Web application security testing",
+    88→        "api_security_test": "API security testing and fuzzing",
+    89→        "mobile_app_test": "Mobile application security assessment",
+    90→        "wireless_test": "Wireless network security testing",
+    91→        "social_engineering": "Social engineering campaign execution",
+    92→        "phishing_campaign": "Phishing campaign management and tracking",
+    93→        "red_team_ops": "Full red team operation coordination",
+    94→        "purple_team_exercise": "Purple team collaboration exercises",
+    95→        "adversary_emulation": "APT adversary emulation (MITRE ATT&CK)",
+    96→        "credential_testing": "Credential strength testing and auditing",
+    97→        "password_audit": "Password policy compliance auditing",
+    98→        "privilege_escalation_test": "Privilege escalation path testing",
+    99→        "lateral_movement_test": "Lateral movement path identification",
+   100→        "persistence_test": "Persistence mechanism testing",
+   101→        "c2_infrastructure": "C2 infrastructure setup and management",
+   102→        "payload_generation": "Custom payload generation and obfuscation",
+   103→        "shellcode_dev": "Shellcode development and testing",
+   104→        "exploit_development": "Custom exploit development",
+   105→        "fuzzing": "Protocol and format fuzzing campaigns",
+   106→        "reverse_engineering": "Binary reverse engineering",
+   107→        "malware_analysis": "Static and dynamic malware analysis",
+   108→        "sandbox_analysis": "Sandbox-based malware detonation",
+   109→        "memory_forensics_off": "Offensive memory forensics",
+   110→        "network_exploitation": "Network protocol exploitation",
+   111→        "voip_exploitation": "VoIP system security testing",
+   112→        "scada_testing": "ICS/SCADA security assessment",
+   113→        "iot_exploitation": "IoT device security testing",
+   114→        "hardware_security": "Hardware security assessment",
+   115→        "physical_penetration": "Physical security penetration testing",
+   116→        "lock_picking": "Lock picking and bypass assessment",
+   117→        "tail_gating": "Tailgating and social entry testing",
+   118→        "drone_recon": "Drone-based physical reconnaissance",
+   119→        "wireless_c2": "Wireless C2 communication",
+   120→        "covert_channel": "Covert data exfiltration channel testing",
+   121→        "dns_tunneling": "DNS tunneling capability testing",
+   122→        "steganography_test": "Steganography detection and usage testing",
+   123→        "encryption_bypass": "Encryption implementation weakness testing",
+   124→        "auth_bypass": "Authentication bypass technique testing",
+   125→        "session_hijacking": "Session hijacking and fixation testing",
+   126→        "xss_exploitation": "Cross-site scripting exploitation",
+   127→        "sqli_exploitation": "SQL injection exploitation and testing",
+   128→        "ssrf_exploitation": "Server-side request forgery testing",
+   129→        "rce_exploitation": "Remote code execution testing",
+   130→        "deserialization_test": "Insecure deserialization testing",
+   131→        "supply_chain_attack": "Supply chain attack simulation",
+   132→        "dependency_attack": "Dependency confusion attack testing",
+   133→        "container_escape": "Container escape technique testing",
+   134→        "cloud_misconfig": "Cloud misconfiguration exploitation",
+   135→        "identity_attack": "Identity and access management attack testing",
+   136→        "token_theft": "Token theft and replay attack testing",
+   137→        "api_abuse": "API abuse and business logic flaw testing",
+   138→        "data_exfiltration": "Data exfiltration technique testing",
+   139→        "ddos_simulation": "DDoS attack simulation and mitigation testing",
+   140→        "resource_exhaustion": "Resource exhaustion attack testing",
+   141→        "race_condition": "Race condition exploitation testing",
+   142→        "time_based_attack": "Time-based attack vector testing",
+   143→        "unicode_attack": "Unicode and encoding attack testing",
+   144→        "bypass_waf": "WAF bypass technique testing",
+   145→        "evasion_techniques": "Detection evasion technique development",
+   146→        "opsec_planning": "Operational security planning and review",
+   147→        "deconfliction": "Deconfliction and rules of engagement management",
+   148→        "rules_of_engagement": "Rules of engagement development",
+   149→        "scope_management": "Engagement scope definition and enforcement",
+   150→    }
+   151→
+   152→    # ── Category: defensive_expansion (64) ────────────────────────────
+   153→    _DE = {
+   154→        "ids_deployment": "Intrusion detection system deployment and tuning",
+   155→        "ips_management": "Intrusion prevention system management",
+   156→        "siem_integration": "SIEM integration and correlation rule development",
+   157→        "log_aggregation": "Centralized log aggregation and normalization",
+   158→        "edr_deployment": "Endpoint detection and response deployment",
+   159→        "xdr_integration": "Extended detection and response integration",
+   160→        "nta_monitoring": "Network traffic analysis and monitoring",
+   161→        "nbad_detection": "Network behavior anomaly detection",
+   162→        "ueba_deployment": "User and entity behavior analytics",
+   163→        "soar_automation": "Security orchestration and response automation",
+   164→        "incident_triage": "Automated incident triage and prioritization",
+   165→        "incident_response": "Incident response workflow management",
+   166→        "containment_strategy": "Automated containment strategy execution",
+   167→        "eradication_procedure": "Eradication procedure management",
+   168→        "recovery_automation": "Recovery automation and validation",
+   169→        "lessons_learned": "Post-incident lessons learned capture",
+   170→        "threat_modeling": "Systematic threat modeling (STRIDE/DREAD)",
+   171→        "attack_tree": "Attack tree generation and analysis",
+   172→        "kill_chain_analysis": "Cyber kill chain mapping and analysis",
+   173→        "mitre_mapping": "MITRE ATT&CK technique mapping",
+   174→        "risk_assessment": "Comprehensive risk assessment methodology",
+   175→        "vulnerability_scanning": "Automated vulnerability scanning management",
+   176→        "patch_management": "Patch management and deployment automation",
+   177→        "configuration_hardening": "System configuration hardening automation",
+   178→        "baseline_compliance": "Security baseline compliance checking",
+   179→        "drift_detection": "Configuration drift detection and alerting",
+   180→        "file_integrity": "File integrity monitoring and alerting",
+   181→        "process_monitoring": "Process monitoring and anomaly detection",
+   182→        "network_segmentation": "Network segmentation validation and enforcement",
+   183→        "firewall_management": "Firewall rule management and optimization",
+   184→        "dns_security": "DNS security (DNSSEC, DoH, DoT) management",
+   185→        "tls_management": "TLS certificate lifecycle management",
+   186→        "zero_trust": "Zero trust architecture implementation",
+   187→        "micro_segmentation": "Micro-segmentation policy management",
+   188→        "api_gateway": "API gateway security policy management",
+   189→        "waf_management": "Web application firewall management",
+   190→        "dap_protection": "Data loss prevention policy management",
+   191→        "encryption_management": "Encryption key and policy management",
+   192→        "secrets_management": "Secrets management and rotation automation",
+   193→        "iam_policy": "Identity and access management policy management",
+   194→        "mfa_enforcement": "Multi-factor authentication enforcement",
+   195→        "pam_management": "Privileged access management",
+   196→        "container_security": "Container runtime security monitoring",
+   197→        "image_scanning": "Container image vulnerability scanning",
+   198→        "k8s_security": "Kubernetes security policy management",
+   199→        "cloud_security": "Cloud security posture management",
+   200→        "serverless_security": "Serverless function security monitoring",
+   201→        "backup_verification": "Backup integrity verification and testing",
+   202→        "disaster_recovery": "Disaster recovery plan management and testing",
+   203→        "business_continuity": "Business continuity planning",
+   204→        "security_awareness": "Security awareness training automation",
+   205→        "phishing_simulation": "Phishing simulation campaign management",
+   206→        "vendor_risk": "Third-party vendor risk assessment",
+   207→        "compliance_automation": "Compliance audit automation",
+   208→        "policy_management": "Security policy lifecycle management",
+   209→        "asset_classification": "Data and asset classification automation",
+   210→        "threat_intel_platform": "Threat intelligence platform management",
+   211→        "deception_technology": "Deception technology (honeypots, honeytokens) deployment",
+   212→        "incident_forensics": "Digital forensics for incident investigation",
+   213→        "malware_quarantine": "Automated malware quarantine and analysis",
+   214→        "threat_hunting_proactive": "Proactive threat hunting campaign management",
+   215→        "purple_team_auto": "Automated purple team exercise execution",
+   216→        "security_metrics": "Security metrics collection and dashboard automation",
+   217→        "executive_reporting": "Executive security reporting automation",
+   218→    }
+   219→
+   220→    # ── Category: physical_security_expansion (66) ────────────────────
+   221→    _PE = {
+   222→        "perimeter_detection": "Perimeter intrusion detection and alerting",
+   223→        "motion_tracking": "Motion detection and object tracking",
+   224→        "facial_recognition": "Facial recognition and identification",
+   225→        "license_plate_recognition": "License plate recognition (LPR)",
+   226→        "vehicle_tracking": "Vehicle tracking and movement analysis",
+   227→        "drone_detection": "Unauthorized drone detection and tracking",
+   228→        "acoustic_monitoring": "Acoustic monitoring and anomaly detection",
+   229→        "seismic_detection": "Seismic sensor intrusion detection",
+   230→        "thermal_imaging": "Thermal imaging surveillance and detection",
+   231→        "radar_surveillance": "Radar-based surveillance and tracking",
+   232→        "sonar_detection": "Sonar-based underwater detection",
+   233→        "lidar_mapping": "LiDAR 3D environment mapping",
+   234→        "access_control_biometric": "Biometric access control management",
+   235→        "access_control_badge": "Badge-based access control management",
+   236→        "access_control_mobile": "Mobile credential access control",
+   237→        "mantrap_management": "Mantrap and anti-tailgating management",
+   238→        "visitor_management": "Visitor registration and tracking",
+   239→        "escort_management": "Visitor escort and zone management",
+   240→        "camera_analytics": "Video analytics and intelligent surveillance",
+   241→        "cctv_management": "CCTV system management and monitoring",
+   242→        "ptz_control": "PTZ camera automated control",
+   243→        "video_retention": "Video retention policy management",
+   244→        "alarm_management": "Alarm system integration and management",
+   245→        "intrusion_detection_phys": "Physical intrusion detection systems",
+   246→        "duress_system": "Duress alarm and panic button systems",
+   247→        "intercom_system": "Intercom and communication system management",
+   248→        "gate_management": "Gate and barrier automation",
+   249→        "parking_management": "Parking lot monitoring and management",
+   250→        "elevator_control": "Elevator access control and monitoring",
+   251→        "safe_room": "Safe room and panic room management",
+   252→        "asset_tracking": "Physical asset tracking and inventory",
+   253→        "equipment_monitoring": "Equipment condition monitoring",
+   254→        "environmental_monitoring": "Environmental condition monitoring (temp, humidity)",
+   255→        "fire_detection": "Fire and smoke detection integration",
+   256→        "hazmat_monitoring": "Hazardous material monitoring",
+   257→        "radiation_detection": "Radiation detection and monitoring",
+   258→        "emf_detection": "Electromagnetic field detection",
+   259→        "gps_tracking": "GPS tracking and geofencing",
+   260→        "geofence_management": "Geofence zone creation and management",
+   261→        "route_planning": "Secure route planning and optimization",
+   262→        "convoy_management": "Convoy and fleet movement management",
+   263→        "counter_surveillance": "Counter-surveillance detection and response",
+   264→        "sweep_detection": "Electronic surveillance sweep and detection",
+   265→        "jamming_detection": "Signal jamming detection and response",
+   266→        "comm_security": "Communications security monitoring",
+   267→        "mesh_network": "Mesh network deployment and management",
+   268→        "satellite_comms": "Satellite communication integration",
+   269→        "emergency_notification": "Emergency notification and mass alerting",
+   270→        "evacuation_management": "Evacuation route planning and management",
+   271→        "mustering": "Personnel mustering and accountability",
+   272→        "guard_force": "Guard force management and scheduling",
+   273→        "patrol_management": "Guard patrol route management and verification",
+   274→        "incident_response_phys": "Physical security incident response",
+   275→        "physical_threat_assess": "Physical threat assessment methodology",
+   276→        "executive_protection": "Executive protection operation management",
+   277→        "travel_security": "Travel security risk assessment and management",
+   278→        "venue_security": "Venue security assessment and management",
+   279→        "event_security": "Event security operations management",
+   280→        "critical_infrastructure": "Critical infrastructure protection",
+   281→        "supply_chain_phys": "Physical supply chain security",
+   282→        "maritime_security": "Maritime security operations",
+   283→        "aviation_security": "Aviation security assessment",
+   284→        "border_security": "Border security monitoring and control",
+   285→        "crowd_management": "Crowd dynamics monitoring and management",
+   286→        "weather_monitoring": "Weather impact on security operations",
+   287→        "night_vision": "Night vision and low-light monitoring",
+   288→        "underwater_security": "Underwater security monitoring",
+   289→        "wildlife_detection": "Wildlife detection for perimeter security",
+   290→    }
+   291→
+   292→    # ── Category: vip_protection_expansion (60) ───────────────────────
+   293→    _VE = {
+   294→        "close_protection": "Close protection officer coordination",
+   295→        "advance_recon": "Advance reconnaissance for VIP movements",
+   296→        "route_analysis": "Secure route analysis and selection",
+   297→        "motorcade_management": "Motorcade formation and management",
+   298→        "vehicle_armoring": "Armored vehicle specification and management",
+   299→        "evasive_driving": "Evasive driving protocol management",
+   300→        "counter_ambush": "Counter-ambush planning and response",
+   301→        "vechicle_checkpoint": "Vehicle checkpoint security procedures",
+   302→        "drone_protection": "Anti-drone countermeasure deployment",
+   303→        "air_space_monitor": "Airspace monitoring for VIP events",
+   304→        "rooftop_security": "Rooftop and elevated position security",
+   305→        "sniper_detection": "Sniper detection and counter-sniper response",
+   306→        "blast_protection": "Blast protection assessment and mitigation",
+   307→        "medical_response": "On-site medical response coordination",
+   308→        "trauma_kit": "Trauma kit management and inventory",
+   309→        "evacuation_route_vip": "VIP-specific evacuation route planning",
+   310→        "safe_room_vip": "VIP safe room preparation and management",
+   311→        "panic_button_vip": "VIP personal panic button system",
+   312→        "biometric_vip": "VIP biometric identification and verification",
+   313→        "wearable_health": "Wearable health monitoring for VIP",
+   314→        "wearable_location": "Wearable GPS tracking for VIP",
+   315→        "wearable_comm": "Wearable communication device management",
+   316→        "wearable_alert": "Wearable alert and duress system",
+   317→        "personal_cyber": "VIP personal cybersecurity assessment",
+   318→        "device_security": "VIP personal device security hardening",
+   319→        "social_media_monitor": "VIP social media threat monitoring",
+   320→        "doxxing_protection": "Anti-doxxing and personal information protection",
+   321→        "home_security": "VIP residence security assessment",
+   322→        "office_security": "VIP office security assessment",
+   323→        "hotel_security": "Hotel security assessment for VIP travel",
+   324→        "venue_vetting": "Venue security vetting for VIP events",
+   325→        "guest_screening": "Guest and attendee screening for VIP events",
+   326→        "food_security": "Food and beverage security testing",
+   327→        "gift_screening": "Gift and package screening procedures",
+   328→        "comm_plan": "VIP communication plan management",
+   329→        "encryption_vip": "VIP communication encryption management",
+   330→        "secure_room_vip": "Secure conference room setup for VIP",
+   331→        "meeting_security": "Secure meeting procedures",
+   332→        "travel_itinerary": "Secure travel itinerary management",
+   333→        "travel_intel": "Travel destination threat intelligence",
+   334→        "local_contacts": "Local security contact coordination",
+   335→        "transportation": "Secure transportation arrangement",
+   336→        "luggage_security": "Luggage and belonging security",
+   337→        "cyber_escort": "Cybersecurity escort for VIP travel",
+   338→        "family_protection": "VIP family member protection coordination",
+   339→        "pet_protection": "VIP pet and animal security",
+   340→        "media_management": "Media and press management for VIP",
+   341→        "appearance_management": "VIP appearance and timing security",
+   342→        "crowd_liaison": "Crowd and fan liaison management",
+   343→        "protest_monitor": "Protest and demonstration monitoring",
+   344→        "threat_intel_vip": "VIP-specific threat intelligence",
+   345→        "stalking_detection": "Stalking and harassment detection",
+   346→        "kidnapping_prevention": "Kidnapping prevention measures",
+   347→        "ransom_protocol": "Kidnapping and ransom response protocol",
+   348→        "surveillance_detection_vip": "VIP-targeted surveillance detection",
+   349→        "social_engineering_vip": "VIP-targeted social engineering defense",
+   350→        "impersonation_detect": "VIP impersonation detection",
+   351→        "reputation_protection": "VIP reputation protection and management",
+   352→        "crisis_communication": "Crisis communication planning for VIP incidents",
+   353→        "legal_coordination": "Legal coordination for VIP protection",
+   354→        "insurance_coordination": "Insurance coordination for VIP events",
+   355→        "budget_management": "VIP protection budget and resource management",
+   356→        "training_vip": "VIP protection team training management",
+   357→        "drill_management": "Security drill and exercise management",
+   358→    }
+   359→
+   360→    # ── Unified POTENTIALS dictionary ─────────────────────────────────
+   361→    POTENTIALS: Dict[str, Dict[str, str]] = {
+   362→        **{k: {"category": "intelligence_expansion", "description": v} for k, v in _IE.items()},
+   363→        **{k: {"category": "offensive_expansion", "description": v} for k, v in _OE.items()},
+   364→        **{k: {"category": "defensive_expansion", "description": v} for k, v in _DE.items()},
+   365→        **{k: {"category": "physical_security_expansion", "description": v} for k, v in _PE.items()},
+   366→        **{k: {"category": "vip_protection_expansion", "description": v} for k, v in _VE.items()},
+   367→    }
+   368→
+   369→    CATEGORY_COUNTS: Dict[str, int] = {
+   370→        "intelligence_expansion": 53,
+   371→        "offensive_expansion": 65,
+   372→        "defensive_expansion": 64,
+   373→        "physical_security_expansion": 68,
+   374→        "vip_protection_expansion": 64,
+   375→    }
+   376→
+   377→    TOTAL = sum(CATEGORY_COUNTS.values())  # 314
+   378→
+   379→    def __init__(self):
+   380→        self._activated: List[str] = []
+   381→        self._exploration_log: List[Dict[str, Any]] = []
+   382→
+   383→    # ── Static discovery methods ──────────────────────────────────────
+   384→
+   385→    @staticmethod
+   386→    def list_potentials(category: Optional[str] = None) -> Dict[str, Any]:
+   387→        """List potentials, optionally filtered by category.
+   388→
+   389→        Args:
+   390→            category: If provided, only return potentials in this category.
+   391→                      One of the 5 category keys, or None for all.
+   392→        """
+   393→        if category:
+   394→            if category not in PotentialsEngine.CATEGORY_COUNTS:
+   395→                return {
+   396→                    "status": "error",
+   397→                    "message": f"Unknown category: {category}",
+   398→                    "available_categories": list(PotentialsEngine.CATEGORY_COUNTS.keys()),
+   399→                }
+   400→            filtered = {
+   401→                k: v for k, v in PotentialsEngine.POTENTIALS.items()
+   402→                if v["category"] == category
+   403→            }
+   404→            return {
+   405→                "status": "ok",
+   406→                "category": category,
+   407→                "potentials": filtered,
+   408→                "count": len(filtered),
+   409→            }
+   410→        return {
+   411→            "status": "ok",
+   412→            "total_potentials": PotentialsEngine.TOTAL,
+   413→            "categories": PotentialsEngine.CATEGORY_COUNTS,
+   414→            "potentials": PotentialsEngine.POTENTIALS,
+   415→        }
+   416→
+   417→    @staticmethod
+   418→    def get_potential(name: str) -> Dict[str, Any]:
+   419→        """Return details for a single potential by name."""
+   420→        pot = PotentialsEngine.POTENTIALS.get(name)
+   421→        if not pot:
+   422→            return {"status": "error", "message": f"Unknown potential: {name}"}
+   423→        return {"status": "ok", "name": name, **pot}
+   424→
+   425→    @staticmethod
+   426→    def search(query: str, category: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+   427→        """Search potentials by keyword in name or description.
+   428→
+   429→        Args:
+   430→            query: Search string (case-insensitive substring match).
+   431→            category: Optional category filter.
+   432→            limit: Maximum results to return.
+   433→        """
+   434→        query_lower = query.lower()
+   435→        results = {}
+   436→        for name, info in PotentialsEngine.POTENTIALS.items():
+   437→            if category and info["category"] != category:
+   438→                continue
+   439→            if query_lower in name.lower() or query_lower in info["description"].lower():
+   440→                results[name] = info
+   441→                if len(results) >= limit:
+   442→                    break
+   443→        return {
+   444→            "status": "ok",
+   445→            "query": query,
+   446→            "category": category,
+   447→            "results": results,
+   448→            "count": len(results),
+   449→        }
+   450→
+   451→    @staticmethod
+   452→    def get_categories() -> Dict[str, Any]:
+   453→        """Return all categories with their potential counts."""
+   454→        return {
+   455→            "status": "ok",
+   456→            "total_potentials": PotentialsEngine.TOTAL,
+   457→            "categories": PotentialsEngine.CATEGORY_COUNTS,
+   458→        }
+   459→
+   460→    # ── Instance exploration / activation ─────────────────────────────
+   461→
+   462→    def explore(self, query: str, max_results: int = 10) -> Dict[str, Any]:
+   463→        """Explore potentials matching a query (instance method, logs exploration)."""
+   464→        logger.info(f"Potentials exploration: query='{query}' max={max_results}")
+   465→        search_result = self.search(query, limit=max_results)
+   466→        entry = {
+   467→            "query": query,
+   468→            "max_results": max_results,
+   469→            "results_count": search_result["count"],
+   470→            "timestamp": __import__("datetime").datetime.now(
+   471→                __import__("datetime").timezone.utc
+   472→            ).isoformat(),
+   473→        }
+   474→        self._exploration_log.append(entry)
+   475→        return {
+   476→            "status": "ok",
+   477→            "query": query,
+   478→            "total_available": self.TOTAL,
+   479→            "categories": self.CATEGORY_COUNTS,
+   480→            **search_result,
+   481→        }
+   482→
+   483→    def activate(self, potential_name: str, require_council: bool = True) -> Dict[str, Any]:
+   484→        """Activate a potential capability. Council approval required by default.
+   485→
+   486→        Args:
+   487→            potential_name: The slug of the potential to activate.
+   488→            require_council: If True (default), the expert council must approve.
+   489→        """
+   490→        pot = PotentialsEngine.POTENTIALS.get(potential_name)
+   491→        if not pot:
+   492→            return {"status": "error", "message": f"Unknown potential: {potential_name}"}
+   493→
+   494→        if potential_name in self._activated:
+   495→            return {"status": "ok", "message": f"Potential '{potential_name}' is already active", "total_activated": len(self._activated)}
+   496→
+   497→        if require_council:
+   498→            decision = expert_council.consult(
+   499→                f"Activate potential: {potential_name}",
+   500→                f"Category: {pot['category']} | Description: {pot['description']} | Currently activated: {len(self._activated)}",
+   501→            )
+   502→            if decision.decision != "approved":
+   503→                logger.warning(f"Council denied potential activation: {potential_name}")
+   504→                return {"status": "denied", "potential": potential_name, "council": decision.to_dict()}
+   505→        self._activated.append(potential_name)
+   506→        logger.info(f"Activated potential: {potential_name}")
+   507→        return {"status": "activated", "potential": potential_name, "category": pot["category"], "total_activated": len(self._activated)}
+   508→
+   509→    def deactivate(self, potential_name: str) -> Dict[str, Any]:
+   510→        """Deactivate a previously activated potential."""
+   511→        if potential_name in self._activated:
+   512→            self._activated.remove(potential_name)
+   513→            logger.info(f"Deactivated potential: {potential_name}")
+   514→            return {"status": "deactivated", "potential": potential_name, "total_activated": len(self._activated)}
+   515→        return {"status": "ok", "message": f"Potential '{potential_name}' was not active"}
+   516→
+   517→    def status(self) -> Dict[str, Any]:
+   518→        """Return the current engine status including activated potentials."""
+   519→        activated_details = {
+   520→            name: PotentialsEngine.POTENTIALS[name]
+   521→            for name in self._activated
+   522→            if name in PotentialsEngine.POTENTIALS
+   523→        }
+   524→        return {
+   525→            "total_potentials": PotentialsEngine.TOTAL,
+   526→            "categories": PotentialsEngine.CATEGORY_COUNTS,
+   527→            "activated_count": len(self._activated),
+   528→            "activated": self._activated,
+   529→            "activated_details": activated_details,
+   530→        }

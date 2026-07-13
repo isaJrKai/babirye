@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     // Create notification for the alert
     await db.notification.create({
       data: {
-        userId: auth.payload.role === 'admin' ? undefined : auth.payload.userId,
+        userId: auth.payload.userId,
         type: 'alert',
         title: `Security Alert: ${alert.title}`,
         message: alert.description,

@@ -42,6 +42,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, counts: result });
   } catch (error) {
     console.error('[API /seed POST] Error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

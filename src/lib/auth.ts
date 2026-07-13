@@ -12,8 +12,11 @@ import { db } from './db';
 // ============================================================================
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.BABIRYE_JWT_SECRET || 'babirye-dev-jwt-secret-change-in-production'
+  process.env.BABIRYE_JWT_SECRET || 'fallback-dev-only-not-for-production'
 );
+if (!process.env.BABIRYE_JWT_SECRET) {
+  console.warn('[AUTH] WARNING: Using fallback JWT secret. Set BABIRYE_JWT_SECRET in production!');
+}
 const BCRYPT_ROUNDS = 12;
 const API_TOKEN_TTL_DEFAULT = 28800; // 8 hours
 const MAX_FAILED_ATTEMPTS = 5;

@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
             action,
             service: service || null,
             params: JSON.stringify(safeParams),
-            clientIp: auth.payload.email,
+            clientIp: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',
             reason: result.reason,
           },
         });
@@ -338,7 +338,7 @@ export async function POST(request: NextRequest) {
             action,
             service: service || null,
             params: JSON.stringify(safeParams),
-            clientIp: auth.payload.email,
+            clientIp: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',
             reason: result.reason,
           },
         });

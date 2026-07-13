@@ -56,53 +56,15 @@ interface AppState {
   markNotificationRead: (id: string) => void;
   clearNotifications: () => void;
   setUser: (user: User | null) => void;
+  setNotifications: (notifications: Notification[]) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   currentPage: "dashboard",
   sidebarCollapsed: false,
   theme: "dark",
-  notifications: [
-    {
-      id: "n1",
-      title: "Critical Alert",
-      message: "Unusual traffic pattern detected on perimeter network segment 7",
-      type: "critical",
-      timestamp: new Date(Date.now() - 2 * 60 * 1000),
-      read: false,
-    },
-    {
-      id: "n2",
-      title: "Threat Intel Update",
-      message: "3 new CVEs published affecting current infrastructure stack",
-      type: "warning",
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      read: false,
-    },
-    {
-      id: "n3",
-      title: "Agent Deployed",
-      message: "Honeypot agent ALPHA-7 successfully deployed to DMZ zone",
-      type: "success",
-      timestamp: new Date(Date.now() - 45 * 60 * 1000),
-      read: true,
-    },
-    {
-      id: "n4",
-      title: "Scan Complete",
-      message: "Weekly vulnerability scan completed. 0 critical findings.",
-      type: "info",
-      timestamp: new Date(Date.now() - 120 * 60 * 1000),
-      read: true,
-    },
-  ],
-  user: {
-    id: "u1",
-    name: "Commander Nyx",
-    email: "nyx@babirye.sec",
-    role: "SOC Director",
-    clearanceLevel: 5,
-  },
+  notifications: [],
+  user: null,
 
   setPage: (page) => set({ currentPage: page }),
   toggleSidebar: () =>
@@ -129,4 +91,5 @@ export const useAppStore = create<AppState>((set) => ({
     })),
   clearNotifications: () => set({ notifications: [] }),
   setUser: (user) => set({ user }),
+  setNotifications: (notifications) => set({ notifications }),
 }));

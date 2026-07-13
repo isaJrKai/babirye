@@ -1,0 +1,502 @@
+     1→     1→     1→"use client";
+     2→     2→     2→
+     3→     3→     3→import { useState, useMemo } from "react";
+     4→     4→     4→import { motion } from "framer-motion";
+     5→     5→     5→import {
+     6→     6→     6→  Settings, Users, KeyRound, ShieldCheck, Eye, EyeOff, Pencil, Plus, Trash2, Copy, Loader2, Check, Lock, Info,
+     7→     7→     7→} from "lucide-react";
+     8→     8→     8→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     9→     9→     9→import { Badge } from "@/components/ui/badge";
+    10→    10→    10→import { Button } from "@/components/ui/button";
+    11→    11→    11→import { Input } from "@/components/ui/input";
+    12→    12→    12→import { Label } from "@/components/ui/label";
+    13→    13→    13→import { Switch } from "@/components/ui/switch";
+    14→    14→    14→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    15→    15→    15→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+    16→    16→    16→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+    17→    17→    17→import {
+    18→    18→    18→  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    19→    19→    19→} from "@/components/ui/table";
+    20→    20→    20→import { ScrollArea } from "@/components/ui/scroll-area";
+    21→    21→    21→import { Separator } from "@/components/ui/separator";
+    22→    22→    22→import { Skeleton } from "@/components/ui/skeleton";
+    23→    23→    23→import { useApi } from "@/hooks/use-api";
+    24→    24→    24→import { useAppStore } from "@/stores/app-store";
+    25→    25→    25→import { useToast } from "@/hooks/use-toast";
+    26→    26→    26→import { JsonViewer } from "@/components/shared/json-viewer";
+    27→    27→    27→import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+    28→    28→    28→
+    29→    29→    29→interface Setting {
+    30→    30→    30→  id: string; key: string; value: string; category: string; isSecret: boolean; description: string | null;
+    31→    31→    31→}
+    32→    32→    32→interface UserRow {
+    33→    33→    33→  id: string; email: string; name: string | null; role: string; isActive: boolean;
+    34→    34→    34→  lastLoginAt: string | null; failedAttempts: number; lockedUntil: string | null; createdAt: string;
+    35→    35→    35→}
+    36→    36→    36→interface TokenRow {
+    37→    37→    37→  id: string; name: string; purpose: string | null; isRevoked: boolean;
+    38→    38→    38→  createdAt: string; expiresAt: string; lastUsedAt: string | null;
+    39→    39→    39→}
+    40→    40→    40→
+    41→    41→    41→const categoryColors: Record<string, string> = {
+    42→    42→    42→  general: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+    43→    43→    43→  security: "bg-red-500/10 text-red-400 border-red-500/20",
+    44→    44→    44→  network: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    45→    45→    45→  api: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    46→    46→    46→  notification: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    47→    47→    47→  database: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+    48→    48→    48→};
+    49→    49→    49→
+    50→    50→    50→const roleColors: Record<string, string> = {
+    51→    51→    51→  admin: "bg-red-500/10 text-red-400 border-red-500/20",
+    52→    52→    52→  operator: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    53→    53→    53→  analyst: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    54→    54→    54→  viewer: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+    55→    55→    55→};
+    56→    56→    56→
+    57→    57→    57→const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
+    58→    58→    58→const item = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
+    59→    59→    59→
+    60→    60→    60→export function SettingsPage() {
+    61→    61→    61→  const { user } = useAppStore();
+    62→    62→    62→  const { toast } = useToast();
+    63→    63→    63→  const isAdmin = user?.role === "admin";
+    64→    64→    64→
+    65→    65→    65→  const { data: settings, loading: settingsLoading, refetch: refetchSettings } = useApi<Setting[]>("/api/settings");
+    66→    66→    66→  const { data: users, loading: usersLoading, refetch: refetchUsers } = useApi<UserRow[]>("/api/auth?view=users");
+    67→    67→    67→  const { data: tokens, loading: tokensLoading, refetch: refetchTokens } = useApi<TokenRow[]>("/api/auth?view=tokens");
+    68→    68→    68→
+    69→    69→    69→  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
+    70→    70→    70→  const [editDialog, setEditDialog] = useState<{ open: boolean; setting: Setting | null }>({ open: false, editValue: "" });
+    71→    71→    71→  const [editValue, setEditValue] = useState("");
+    72→    72→    72→  const [saving, setSaving] = useState(false);
+    73→    73→    73→
+    74→    74→    74→  // User management
+    75→    75→    75→  const [createUserOpen, setCreateUserOpen] = useState(false);
+    76→    76→    76→  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "analyst" });
+    77→    77→    77→  const [creatingUser, setCreatingUser] = useState(false);
+    78→    78→    78→  const [deactivateTarget, setDeactivateTarget] = useState<UserRow | null>(null);
+    79→    79→    79→  const [deactivatingUser, setDeactivatingUser] = useState(false);
+    80→    80→    80→
+    81→    81→    81→  // Token management
+    82→    82→    82→  const [createTokenOpen, setCreateTokenOpen] = useState(false);
+    83→    83→    83→  const [newToken, setNewToken] = useState({ name: "", purpose: "", ttl: "28800" });
+    84→    84→    84→  const [createdToken, setCreatedToken] = useState<string | null>(null);
+    85→    85→    85→  const [creatingToken, setCreatingToken] = useState(false);
+    86→    86→    86→
+    87→    87→    87→  // Security
+    88→    88→    88→  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
+    89→    89→    89→  const [changingPassword, setChangingPassword] = useState(false);
+    90→    90→    90→
+    91→    91→    91→  const groupedSettings = useMemo(() => {
+    92→    92→    92→    if (!settings) return {};
+    93→    93→    93→    const groups: Record<string, Setting[]> = {};
+    94→    94→    94→    for (const s of settings) {
+    95→    95→    95→      if (!groups[s.category]) groups[s.category] = [];
+    96→    96→    96→      groups[s.category].push(s);
+    97→    97→    97→    }
+    98→    98→    98→    return groups;
+    99→    99→    99→  }, [settings]);
+   100→   100→   100→
+   101→   101→   101→  const toggleReveal = (key: string) => {
+   102→   102→   102→    setRevealedKeys((prev) => {
+   103→   103→   103→      const next = new Set(prev);
+   104→   104→   104→      if (next.has(key)) next.delete(key);
+   105→   105→   105→      else next.add(key);
+   106→   106→   106→      return next;
+   107→   107→   107→    });
+   108→   108→   108→  };
+   109→   109→   109→
+   110→   110→   110→  const openEdit = (setting: Setting) => {
+   111→   111→   111→    setEditDialog({ open: true, setting });
+   112→   112→   112→    setEditValue(setting.value);
+   113→   113→   113→  };
+   114→   114→   114→
+   115→   115→   115→  const saveSetting = async () => {
+   116→   116→   116→    if (!editDialog.setting) return;
+   117→   117→   117→    setSaving(true);
+   118→   118→   118→    const res = await fetch("/api/settings", {
+   119→   119→   119→      method: "PUT",
+   120→   120→   120→      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   121→   121→   121→      body: JSON.stringify({ key: editDialog.setting.key, value: editValue }),
+   122→   122→   122→    });
+   123→   123→   123→    if (res.ok) {
+   124→   124→   124→      toast({ title: "Setting updated", description: `${editDialog.setting.key} has been updated.` });
+   125→   125→   125→      setEditDialog({ open: false, setting: null });
+   126→   126→   126→      refetchSettings();
+   127→   127→   127→    } else {
+   128→   128→   128→      const d = await res.json().catch(() => ({}));
+   129→   129→   129→      toast({ title: "Error", description: d.error || "Failed to update setting", variant: "destructive" });
+   130→   130→   130→    }
+   131→   131→   131→    setSaving(false);
+   132→   132→   132→  };
+   133→   133→   133→
+   134→   134→   134→  const handleCreateUser = async () => {
+   135→   135→   135→    if (!newUser.email || !newUser.password || !newUser.name) return;
+   136→   136→   136→    setCreatingUser(true);
+   137→   137→   137→    try {
+   138→   138→   138→      const res = await fetch("/api/auth", {
+   139→   139→   139→        method: "POST",
+   140→   140→   140→        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   141→   141→   141→        body: JSON.stringify({ action: "create_user", ...newUser }),
+   142→   142→   142→      });
+   143→   143→   143→      if (res.ok) {
+   144→   144→   144→        toast({ title: "User created", description: `${newUser.email} has been added.` });
+   145→   145→   145→        setCreateUserOpen(false);
+   146→   146→   146→        setNewUser({ name: "", email: "", password: "", role: "analyst" });
+   147→   147→   147→        refetchUsers();
+   148→   148→   148→      } else {
+   149→   149→   149→        const d = await res.json().catch(() => ({}));
+   150→   150→   150→        toast({ title: "Error", description: d.error || "Failed to create user", variant: "destructive" });
+   151→   151→   151→      }
+   152→   152→   152→    } catch { toast({ title: "Error", description: "Network error", variant: "destructive" }); }
+   153→   153→   153→    setCreatingUser(false);
+   154→   154→   154→  };
+   155→   155→   155→
+   156→   156→   156→  const handleRoleChange = async (userId: string, role: string) => {
+   157→   157→   157→    await fetch("/api/auth", {
+   158→   158→   158→      method: "PUT",
+   159→   159→   159→      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   160→   160→   160→      body: JSON.stringify({ userId, role }),
+   161→   161→   161→    });
+   162→   162→   162→    refetchUsers();
+   163→   163→   163→  };
+   164→   164→   164→
+   165→   165→   165→  const handleToggleActive = async (userId: string) => {
+   166→   166→   166→    await fetch("/api/auth", {
+   167→   167→   167→      method: "PUT",
+   168→   168→   168→      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   169→   169→   169→      body: JSON.stringify({ userId, action: "toggle_active" }),
+   170→   170→   170→    });
+   171→   171→   171→    refetchUsers();
+   172→   172→   172→  };
+   173→   173→   173→
+   174→   174→   174→  const handleCreateToken = async () => {
+   175→   175→   175→    if (!newToken.name) return;
+   176→   176→   176→    setCreatingToken(true);
+   177→   177→   177→    setCreatedToken(null);
+   178→   178→   178→    try {
+   179→   179→   179→      const res = await fetch("/api/auth", {
+   180→   180→   180→        method: "POST",
+   181→   181→   181→        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   182→   182→   182→        body: JSON.stringify({ action: "create_token", name: newToken.name, purpose: newToken.purpose, ttl: parseInt(newToken.ttl, 10) }),
+   183→   183→   183→      });
+   184→   184→   184→      const data = await res.json();
+   185→   185→   185→      if (res.ok) {
+   186→   186→   186→        setCreatedToken(data.token);
+   187→   187→   187→        setNewToken({ name: "", purpose: "", ttl: "28800" });
+   188→   188→   188→        refetchTokens();
+   189→   189→   189→      } else {
+   190→   190→   190→        toast({ title: "Error", description: data.error || "Failed to create token", variant: "destructive" });
+   191→   191→   191→      }
+   192→   192→   192→    } catch { toast({ title: "Error", description: "Network error", variant: "destructive" }); }
+   193→   193→   193→    setCreatingToken(false);
+   194→   194→   194→  };
+   195→   195→   195→
+   196→   196→   196→  const handleRevokeToken = async (tokenId: string) => {
+   197→   197→   197→    await fetch(`/api/auth?token_id=${tokenId}`, {
+   198→   198→   198→      method: "DELETE",
+   199→   199→   199→      headers: { Authorization: `Bearer ${localStorage.getItem("babirye_token")}` },
+   200→   200→   200→    });
+   201→   201→   201→    refetchTokens();
+   202→   202→   202→    toast({ title: "Token revoked" });
+   203→   203→   203→  };
+   204→   204→   204→
+   205→   205→   205→  const copyToClipboard = (text: string) => {
+   206→   206→   206→    navigator.clipboard.writeText(text);
+   207→   207→   207→    toast({ title: "Copied to clipboard" });
+   208→   208→   208→  };
+   209→   209→   209→
+   210→   210→   210→  const fmtDate = (d: string | null) => {
+   211→   211→   211→    if (!d) return "—";
+   212→   212→   212→    return new Date(d).toLocaleString();
+   213→   213→   213→  };
+   214→   214→   214→
+   215→   215→   215→  return (
+   216→   216→   216→    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+   217→   217→   217→      <motion.div variants={item} className="flex items-center justify-between">
+   218→   218→   218→        <div>
+   219→   219→   219→          <h1 className="text-2xl font-bold tracking-tight text-foreground">System Settings</h1>
+   220→   220→   220→          <p className="text-sm text-muted-foreground font-mono mt-0.5">Configure platform parameters, users, tokens, and security</p>
+   221→   221→   221→        </div>
+   222→   222→   222→        <Badge variant="outline" className="border-primary/30 text-primary font-mono text-xs">CONFIG</Badge>
+   223→   223→   223→      </motion.div>
+   224→   224→   224→
+   225→   225→   225→      <Tabs defaultValue="system" className="space-y-4">
+   226→   226→   226→        <TabsList className="bg-muted/50 border border-border/50">
+   227→   227→   227→          <TabsTrigger value="system" className="gap-1.5 text-xs"><Settings className="h-3.5 w-3.5" />System</TabsTrigger>
+   228→   228→   228→          <TabsTrigger value="users" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Users</TabsTrigger>
+   229→   229→   229→          <TabsTrigger value="tokens" className="gap-1.5 text-xs"><KeyRound className="h-3.5 w-3.5" />API Tokens</TabsTrigger>
+   230→   230→   230→          <TabsTrigger value="security" className="gap-1.5 text-xs"><ShieldCheck className="h-3.5 w-3.5" />Security</TabsTrigger>
+   231→   231→   231→        </TabsList>
+   232→   232→   232→
+   233→   233→   233→        {/* System Settings Tab */}
+   234→   234→   234→        <TabsContent value="system">
+   235→   235→   235→          {settingsLoading ? (
+   236→   236→   236→            <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+   237→   237→   237→          ) : (
+   238→   238→   238→            <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+   239→   239→   239→              <CardContent className="p-0">
+   240→   240→   240→                <ScrollArea className="max-h-[500px]">
+   241→   241→   241→                  <Table>
+   242→   242→   242→                    <TableHeader>
+   243→   243→   243→                      <TableRow className="border-border/50 hover:bg-transparent">
+   244→   244→   244→                        <TableHead className="text-xs font-mono">Key</TableHead>
+   245→   245→   245→                        <TableHead className="text-xs font-mono">Value</TableHead>
+   246→   246→   246→                        <TableHead className="text-xs">Category</TableHead>
+   247→   247→   247→                        <TableHead className="text-xs text-muted-foreground hidden md:table-cell">Description</TableHead>
+   248→   248→   248→                        <TableHead className="w-16"></TableHead>
+   249→   249→   249→                      </TableRow>
+   250→   250→   250→                    </TableHeader>
+   251→   251→   251→                    <TableBody>
+   252→   252→   252→                      {Object.entries(groupedSettings).flatMap(([cat, items]) =>
+   253→   253→   253→                        items.map((s) => (
+   254→   254→   254→                          <TableRow key={s.id} className="border-border/30">
+   255→   255→   255→                            <TableCell className="font-mono text-xs text-primary/80 py-2.5">{s.key}</TableCell>
+   256→   256→   256→                            <TableCell className="font-mono text-xs py-2.5">
+   257→   257→   257→                              {s.isSecret && !revealedKeys.has(s.key)
+   258→   258→   258→                                ? <span className="text-muted-foreground">••••••••</span>
+   259→   259→   259→                                : <span className="max-w-[200px] truncate inline-block">{s.value}</span>}
+   260→   260→   260→                              {s.isSecret && (
+   261→   261→   261→                                <button onClick={() => toggleReveal(s.key)} className="ml-2 text-muted-foreground hover:text-foreground">
+   262→   262→   262→                                  {revealedKeys.has(s.key) ? <EyeOff className="h-3.5 w-3.5 inline" /> : <Eye className="h-3.5 w-3.5 inline" />}
+   263→   263→   263→                                </button>
+   264→   264→   264→                              )}
+   265→   265→   265→                            </TableCell>
+   266→   266→   266→                            <TableCell className="py-2.5">
+   267→   267→   267→                              <Badge variant="outline" className={`text-[10px] font-mono ${categoryColors[s.category] || ""}`}>
+   268→   268→   268→                                {s.category}
+   269→   269→   269→                              </Badge>
+   270→   270→   270→                            </TableCell>
+   271→   271→   271→                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell py-2.5">{s.description || "—"}</TableCell>
+   272→   272→   272→                            <TableCell className="py-2.5">
+   273→   273→   273→                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(s)}>
+   274→   274→   274→                                <Pencil className="h-3.5 w-3.5" />
+   275→   275→   275→                              </Button>
+   276→   276→   276→                            </TableCell>
+   277→   277→   277→                          </TableRow>
+   278→   278→   278→                        ))
+   279→   279→   279→                      )}
+   280→   280→   280→                    </TableBody>
+   281→   281→   281→                  </Table>
+   282→   282→   282→                </ScrollArea>
+   283→   283→   283→              </CardContent>
+   284→   284→   284→            </Card>
+   285→   285→   285→          )}
+   286→   286→   286→          <div className="mt-4">
+   287→   287→   287→            <p className="text-xs text-muted-foreground mb-2 font-medium">Settings JSON</p>
+   288→   288→   288→            <JsonViewer
+   289→   289→   289→              data={Object.fromEntries((settings || []).map((s) => [
+   290→   290→   290→                s.key,
+   291→   291→   291→                { value: s.isSecret && !revealedKeys.has(s.key) ? "••••••••" : s.value, category: s.category, isSecret: s.isSecret, description: s.description },
+   292→   292→   292→              ]))}
+   293→   293→   293→              maxHeight="max-h-64"
+   294→   294→   294→              initialDepth={2}
+   295→   295→   295→            />
+   296→   296→   296→          </div>
+   297→   297→   297→        </TabsContent>
+   298→   298→   298→
+   299→   299→   299→        {/* Users Tab */}
+   300→   300→   300→        <TabsContent value="users">
+   301→   301→   301→          <div className="flex justify-end mb-3">
+   302→   302→   302→            {isAdmin && <Button size="sm" className="gap-1.5 text-xs" onClick={() => setCreateUserOpen(true)}><Plus className="h-3.5 w-3.5" />Create User</Button>}
+   303→   303→   303→          </div>
+   304→   304→   304→          <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+   305→   305→   305→            <CardContent className="p-0">
+   306→   306→   306→              <ScrollArea className="max-h-[500px]">
+   307→   307→   307→                <Table>
+   308→   308→   308→                  <TableHeader>
+   309→   309→   309→                    <TableRow className="border-border/50 hover:bg-transparent">
+   310→   310→   310→                      <TableHead className="text-xs">Email</TableHead>
+   311→   311→   311→                      <TableHead className="text-xs">Name</TableHead>
+   312→   312→   312→                      <TableHead className="text-xs">Role</TableHead>
+   313→   313→   313→                      <TableHead className="text-xs">Active</TableHead>
+   314→   314→   314→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Last Login</TableHead>
+   315→   315→   315→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Failed</TableHead>
+   316→   316→   316→                      <TableHead className="text-xs hidden md:table-cell">Status</TableHead>
+   317→   317→   317→                    </TableRow>
+   318→   318→   318→                  </TableHeader>
+   319→   319→   319→                  <TableBody>
+   320→   320→   320→                    {usersLoading ? (
+   321→   321→   321→                      Array.from({ length: 3 }).map((_, i) => <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-8 w-full" /></TableCell></TableRow>)
+   322→   322→   322→                    ) : (users || []).map((u) => (
+   323→   323→   323→                      <TableRow key={u.id} className="border-border/30">
+   324→   324→   324→                        <TableCell className="font-mono text-xs py-2.5">{u.email}</TableCell>
+   325→   325→   325→                        <TableCell className="text-xs py-2.5">{u.name || "—"}</TableCell>
+   326→   326→   326→                        <TableCell className="py-2.5">
+   327→   327→   327→                          {isAdmin ? (
+   328→   328→   328→                            <Select value={u.role} onValueChange={(v) => handleRoleChange(u.id, v)}>
+   329→   329→   329→                              <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+   330→   330→   330→                              <SelectContent>
+   331→   331→   331→                                <SelectItem value="admin">Admin</SelectItem>
+   332→   332→   332→                                <SelectItem value="operator">Operator</SelectItem>
+   333→   333→   333→                                <SelectItem value="analyst">Analyst</SelectItem>
+   334→   334→   334→                                <SelectItem value="viewer">Viewer</SelectItem>
+   335→   335→   335→                              </SelectContent>
+   336→   336→   336→                            </Select>
+   337→   337→   337→                          ) : (
+   338→   338→   338→                            <Badge variant="outline" className={`text-[10px] ${roleColors[u.role] || ""}`}>{u.role}</Badge>
+   339→   339→   339→                          )}
+   340→   340→   340→                        </TableCell>
+   341→   341→   341→                        <TableCell className="py-2.5">
+   342→   342→   342→                          <Switch checked={u.isActive} onCheckedChange={() => setDeactivateTarget(u)} disabled={!isAdmin} />
+   343→   343→   343→                        </TableCell>
+   344→   344→   344→                        <TableCell className="font-mono text-[11px] text-muted-foreground hidden lg:table-cell py-2.5">{fmtDate(u.lastLoginAt)}</TableCell>
+   345→   345→   345→                        <TableCell className="font-mono text-[11px] hidden lg:table-cell py-2.5">
+   346→   346→   346→                          <span className={u.failedAttempts > 3 ? "text-red-400" : "text-muted-foreground"}>{u.failedAttempts}</span>
+   347→   347→   347→                        </TableCell>
+   348→   348→   348→                        <TableCell className="hidden md:table-cell py-2.5">
+   349→   349→   349→                          {u.lockedUntil && new Date(u.lockedUntil) > new Date() ? (
+   350→   350→   350→                            <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">
+   351→   351→   351→                              <Lock className="h-3 w-3 mr-1" />Locked
+   352→   352→   352→                            </Badge>
+   353→   353→   353→                          ) : (
+   354→   354→   354→                            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OK</Badge>
+   355→   355→   355→                          )}
+   356→   356→   356→                        </TableCell>
+   357→   357→   357→                      </TableRow>
+   358→   358→   358→                    ))}
+   359→   359→   359→                  </TableBody>
+   360→   360→   360→                </Table>
+   361→   361→   361→              </ScrollArea>
+   362→   362→   362→            </CardContent>
+   363→   363→   363→          </Card>
+   364→   364→   364→        </TabsContent>
+   365→   365→   365→
+   366→   366→   366→        {/* API Tokens Tab */}
+   367→   367→   367→        <TabsContent value="tokens">
+   368→   368→   368→          <div className="flex justify-end mb-3">
+   369→   369→   369→            <Button size="sm" className="gap-1.5 text-xs" onClick={() => { setCreateTokenOpen(true); setCreatedToken(null); }}>
+   370→   370→   370→              <Plus className="h-3.5 w-3.5" />Create Token
+   371→   371→   371→            </Button>
+   372→   372→   372→          </div>
+   373→   373→   373→          <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+   374→   374→   374→            <CardContent className="p-0">
+   375→   375→   375→              <ScrollArea className="max-h-[500px]">
+   376→   376→   376→                <Table>
+   377→   377→   377→                  <TableHeader>
+   378→   378→   378→                    <TableRow className="border-border/50 hover:bg-transparent">
+   379→   379→   379→                      <TableHead className="text-xs">Name</TableHead>
+   380→   380→   380→                      <TableHead className="text-xs hidden md:table-cell">Purpose</TableHead>
+   381→   381→   381→                      <TableHead className="text-xs font-mono">Created</TableHead>
+   382→   382→   382→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Expires</TableHead>
+   383→   383→   383→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Last Used</TableHead>
+   384→   384→   384→                      <TableHead className="text-xs">Status</TableHead>
+   385→   385→   385→                      <TableHead className="w-16"></TableHead>
+   386→   386→   386→                    </TableRow>
+   387→   387→   387→                  </TableHeader>
+   388→   388→   388→                  <TableBody>
+   389→   389→   389→                    {tokensLoading ? (
+   390→   390→   390→                      Array.from({ length: 3 }).map((_, i) => <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-8 w-full" /></TableCell></TableRow>)
+   391→   391→   391→                    ) : (tokens || []).map((t) => (
+   392→   392→   392→                      <TableRow key={t.id} className="border-border/30">
+   393→   393→   393→                        <TableCell className="text-xs font-medium py-2.5">{t.name}</TableCell>
+   394→   394→   394→                        <TableCell className="text-xs text-muted-foreground hidden md:table-cell py-2.5">{t.purpose || "—"}</TableCell>
+   395→   395→   395→                        <TableCell className="font-mono text-[11px] text-muted-foreground py-2.5">{fmtDate(t.createdAt)}</TableCell>
+   396→   396→   396→                        <TableCell className="font-mono text-[11px] text-muted-foreground hidden lg:table-cell py-2.5">{fmtDate(t.expiresAt)}</TableCell>
+   397→   397→   397→                        <TableCell className="font-mono text-[11px] text-muted-foreground hidden lg:table-cell py-2.5">{fmtDate(t.lastUsedAt)}</TableCell>
+   398→   398→   398→                        <TableCell className="py-2.5">
+   399→   399→   399→                          {t.isRevoked ? (
+   400→   400→   400→                            <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">Revoked</Badge>
+   401→   401→   401→                          ) : (
+   402→   402→   402→                            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Active</Badge>
+   403→   403→   403→                          )}
+   404→   404→   404→                        </TableCell>
+   405→   405→   405→                        <TableCell className="py-2.5">
+   406→   406→   406→                          {!t.isRevoked && (
+   407→   407→   407→                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => handleRevokeToken(t.id)}>
+   408→   408→   408→                              <Trash2 className="h-3.5 w-3.5" />
+   409→   409→   409→                            </Button>
+   410→   410→   410→                          )}
+   411→   411→   411→                        </TableCell>
+   412→   412→   412→                      </TableRow>
+   413→   413→   413→                    ))}
+   414→   414→   414→                  </TableBody>
+   415→   415→   415→                </Table>
+   416→   416→   416→              </ScrollArea>
+   417→   417→   417→            </CardContent>
+   418→   418→   418→          </Card>
+   419→   419→   419→        </TabsContent>
+   420→   420→   420→
+   421→   421→   421→        {/* API Tokens Tab */}
+   422→   422→   422→        <TabsContent value="tokens">
+   423→   423→   423→          <div className="flex justify-end mb-3">
+   424→   424→   424→            <Button size="sm" className="gap-1.5 text-xs" onClick={() => { setCreateTokenOpen(true); setCreatedToken(null); }}>
+   425→   425→   425→              <Plus className="h-3.5 w-3.5" />Create Token
+   426→   426→   426→            </Button>
+   427→   427→   427→          </div>
+   428→   428→   428→          <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+   429→   429→   429→            <CardContent className="p-0">
+   430→   430→   430→              <ScrollArea className="max-h-[500px]">
+   431→   431→   431→                <Table>
+   432→   432→   432→                  <TableHeader>
+   433→   433→   433→                    <TableRow className="border-border/50 hover:bg-transparent">
+   434→   434→   434→                      <TableHead className="text-xs">Name</TableHead>
+   435→   435→   435→                      <TableHead className="text-xs hidden md:table-cell">Purpose</TableHead>
+   436→   436→   436→                      <TableHead className="text-xs font-mono">Created</TableHead>
+   437→   437→   437→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Expires</TableHead>
+   438→   438→   438→                      <TableHead className="text-xs font-mono hidden lg:table-cell">Last Used</TableHead>
+   439→   439→   439→                      <TableHead className="text-xs">Status</TableHead>
+   440→   440→   440→                      <TableHead className="w-16"></TableHead>
+   441→   441→   441→                    </TableRow>
+   442→   442→   442→                  </TableHeader>
+   443→   443→   443→                  <TableBody>
+   444→   444→   444→                    {tokensLoading ? (
+   445→   445→   445→                      Array.from({ length: 3 }).map((_, i) => <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-8 w-full" /></TableCell></TableRow>)
+   446→   446→   446→                    ) : (tokens || []).map((t) => (
+   447→   447→   447→                      <TableRow key={t.id} className="border-border/30">
+   448→   448→   448→                        <TableCell className="text-xs font-medium py-2.5">{t.name}</TableCell>
+   449→   449→   449→                        <TableCell className="text-xs text-muted-foreground hidden md:table-cell py-2.5">{t.purpose || "—"}</TableCell>
+   450→   450→   450→                        <TableCell className="font-mono text-[11px] text-muted-foreground py-2.5">{fmtDate(t.createdAt)}</TableCell>
+   451→   451→   451→                        <TableCell className="font-mono text-[11px] text-muted-foreground hidden lg:table-cell py-2.5">{fmtDate(t.expiresAt)}</TableCell>
+   452→   452→   452→                        <TableCell className="font-mono text-[11px] text-muted-foreground hidden lg:table-cell py-2.5">{fmtDate(t.lastUsedAt)}</TableCell>
+   453→   453→   453→                        <TableCell className="py-2.5">
+   454→   454→   454→                          {t.isRevoked ? (
+   455→   455→   455→                            <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">Revoked</Badge>
+   456→   456→   456→                          ) : (
+   457→   457→   457→                            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Active</Badge>
+   458→   458→   458→                          )}
+   459→   459→   459→                        </TableCell>
+   460→   460→   460→                        <TableCell className="py-2.5">
+   461→   461→   461→                          {!t.isRevoked && (
+   462→   462→   462→                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => handleRevokeToken(t.id)}>
+   463→   463→   463→                              <Trash2 className="h-3.5 w-3.5" />
+   464→   464→   464→                            </Button>
+   465→   465→   465→                          )}
+   466→   466→   466→                        </TableCell>
+   467→   467→   467→                      </TableRow>
+   468→   468→   468→                    ))}
+   469→   469→   469→                  </TableBody>
+   470→   470→   470→                </Table>
+   471→   471→   471→              </ScrollArea>
+   472→   472→   472→            </CardContent>
+   473→   473→   473→          </Card>
+   474→   474→   474→          <div className="mt-4">
+   475→   475→   475→            <p className="text-xs text-muted-foreground mb-2 font-medium">Tokens JSON</p>
+   476→   476→   476→            <JsonViewer
+   477→   477→   477→              data={(tokens || []).map((t) => ({
+   478→   478→   478→                id: t.id,
+   479→   479→   479→                name: t.name,
+   480→   480→   480→                purpose: t.purpose,
+   481→   481→   481→                isRevoked: t.isRevoked,
+   482→   482→   482→                createdAt: t.createdAt,
+   483→   483→   483→                expiresAt: t.expiresAt,
+   484→   484→   484→                lastUsedAt: t.lastUsedAt,
+   485→   485→   485→              }))}
+   486→   486→   486→              maxHeight="max-h-64"
+   487→   487→   487→              initialDepth={2}
+   488→   488→   488→            />
+   489→   489→   489→          </div>
+   490→   490→   490→        </TabsContent>
+   491→   491→   491→
+   492→   492→   492→        {/* Security Tab */}
+   493→   493→   493→        <TabsContent value="security">
+   494→   494→   494→          <div className="grid gap-4 md:grid-cols-2">
+   495→   495→   495→            <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+   496→   496→   496→              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold">Change Password</CardTitle></CardHeader>
+   497→   497→   497→              <CardContent className="space-y-3">
+   498→   498→   498→                <div className="space-y-1.5">
+   499→   499→   499→                  <Label className="text-xs">Current Password</Label>
+   500→   500→   500→                  <Input type="password" value={passwordForm.current} onChange={(e) => setPasswordForm((p) => ({ ...p, current: e.target.value }))} className="bg-background/50 font-mono text-sm" />
+
+[showing lines 1-500 of 660; use offset=501 with limit to continue reading]

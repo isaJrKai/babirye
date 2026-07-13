@@ -485,9 +485,10 @@ export async function seedDatabase(): Promise<{ [key: string]: number }> {
       { type: 'vip', title: 'SOS Cancelled: False Alarm', message: 'SOS trigger on PANIC-ALPHA-1 was a false alarm. Device reset and verified.', severity: 'info', isRead: true },
       { type: 'sensor', title: 'EW: Spectrum Anomaly', message: 'SIGINT Interceptor detected unusual RF emissions in 2.4 GHz band near East perimeter.', severity: 'medium', isRead: false },
     ];
-    const user = (await db.user.findFirst({ where: { role: 'admin' } }))!;
+    const adminUser = await db.user.findFirst({ where: { role: 'admin' } });
+    if (!adminUser) { console.warn('[SEED] No admin user found for notifications, skipping'); return counts; }
     for (const n of notifications) {
-      await db.notification.create({ data: { ...n, userId: user.id, metadata: '{}', createdAt: new Date(Date.now() - Math.random() * 3 * 86400000), expiresAt: new Date(Date.now() + 7 * 86400000) } });
+      await db.notification.create({ data: { ...n, userId: adminUser.id, metadata: '{}', createdAt: new Date(Date.now() - Math.random() * 3 * 86400000), expiresAt: new Date(Date.now() + 7 * 86400000) } });
     }
     counts.notifications = notifications.length;
   }
@@ -497,7 +498,9 @@ export async function seedDatabase(): Promise<{ [key: string]: number }> {
   // ════════════════════════════════════════════════════════════════
   if ((await db.task.count()) === 0) {
     const agents = await db.agent.findMany({ select: { id: true, domain: true } });
-    const user = (await db.user.findFirst({ where: { role: 'admin' } }))!;
+    if (agents.length === 0) { console.warn('[SEED] No agents found for tasks, skipping'); return counts; }
+    const adminUser = await db.user.findFirst({ where: { role: 'admin' } });
+    if (!adminUser) { console.warn('[SEED] No admin user found for tasks, skipping'); return counts; }
     const taskTypes = ['forensic', 'offensive', 'defensive', 'micro_defensive', 'sensors', 'vip', 'potentials'];
     const statuses = ['pending', 'running', 'completed', 'completed', 'completed', 'failed'];
     for (let i = 0; i < 15; i++) {
@@ -506,7 +509,7 @@ export async function seedDatabase(): Promise<{ [key: string]: number }> {
       const status = statuses[i % statuses.length];
       await db.task.create({
         data: {
-          agentId: agent.id, creatorId: user.id, type, status,
+          agentId: agent.id, creatorId: adminUser.id, type, status,
           priority: Math.floor(Math.random() * 8) + 2,
           input: JSON.stringify({ description: `Automated ${type} operation task #${i + 1}`, params: {} }),
           output: status === 'completed' ? JSON.stringify({ result: 'Operation successful', findings: Math.floor(Math.random() * 10) }) : null,

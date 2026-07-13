@@ -1,0 +1,390 @@
+     1→     1→/**
+     2→     2→ * BABIRYE v10.0.0 — Database Seeding Module
+     3→     3→ * Populates the database with realistic platform data for all domains.
+     4→     4→ */
+     5→     5→
+     6→     6→import { db } from '@/lib/db';
+     7→     7→import { hashPassword, createSessionToken } from '@/lib/auth';
+     8→     8→
+     9→     9→// ============================================================================
+    10→    10→// SEED DATA DEFINITIONS
+    11→    11→// ============================================================================
+    12→    12→
+    13→    13→const AGENTS = [
+    14→    14→  { name: 'Forensic Agent', domain: 'forensic', description: 'Digital forensics investigation agent — handles disk, memory, network, and mobile device analysis across Android, iOS, and desktop platforms.', version: '10.0.0', status: 'idle' },
+    15→    15→  { name: 'Offensive Agent', domain: 'offensive', description: 'Offensive security operations agent — manages reconnaissance, exploitation, post-exploitation, C2, and red team operations.', version: '10.0.0', status: 'idle' },
+    16→    16→  { name: 'Defensive Agent', domain: 'defensive', description: 'Defensive security operations agent — coordinates network, endpoint, application, identity, data, and cloud defense systems.', version: '10.0.0', status: 'running' },
+    17→    17→  { name: 'Micro Defensive Agent', domain: 'micro_defensive', description: 'Micro-defensive operations agent — manages input validation, output encoding, sanitization, rate limiting, and CORS protections.', version: '10.0.0', status: 'idle' },
+    18→    18→  { name: 'Sensors Agent', domain: 'sensors', description: 'Sensor array management agent — controls radar, sonar, LiDAR, acoustic, and electronic warfare sensor systems.', version: '10.0.0', status: 'running' },
+    19→    19→  { name: 'VIP Protection Agent', domain: 'vip', description: 'VIP protection operations agent — manages close protection, drone surveillance, vehicle tracking, and wearable device monitoring.', version: '10.0.0', status: 'idle' },
+    20→    20→  { name: 'Potentials Engine', domain: 'potentials', description: 'Capabilities discovery and scenario planning engine — maps 300+ operational potentials across all domains with difficulty and impact assessment.', version: '10.0.0', status: 'running' },
+    21→    21→  { name: 'Security Orchestrator', domain: 'orchestration', description: 'Central orchestration agent — coordinates all domain agents, manages the Expert Council, and enforces constitutional compliance.', version: '10.0.0', status: 'running' },
+    22→    22→];
+    23→    23→
+    24→    24→const FORENSIC_TOOLS = [
+    25→    25→  { name: 'Autopsy Forensic Suite', category: 'computer', description: 'End-to-end digital forensics platform for disk and file system analysis.', version: '4.21.0', containerImage: 'babirye/autopsy:4.21.0', port: 9999 },
+    26→    26→  { name: 'Volatility 3', category: 'memory', description: 'Advanced memory forensics framework for RAM dump analysis.', version: '3.0.0', containerImage: 'babirye/volatility:3.0.0', port: 9998 },
+    27→    27→  { name: 'Cellebrite UFED', category: 'android', description: 'Mobile device forensics for Android extraction and analysis.', version: '7.50.0', containerImage: 'babirye/cellebrite:7.50.0', port: 9997 },
+    28→    28→  { name: 'checkra1n Agent', category: 'ios', description: 'iOS device forensic acquisition and jailbreak-assisted extraction.', version: '0.12.4', containerImage: 'babirye/checkra1n:0.12.4', port: 9996 },
+    29→    29→  { name: 'Wireshark Analyzer', category: 'network', description: 'Deep packet inspection and network traffic forensics.', version: '4.2.0', containerImage: 'babirye/wireshark:4.2.0', port: 9995 },
+    30→    30→  { name: 'Bulk Extractor', category: 'advanced', description: 'Scans disk images for interesting features including emails, URLs, and credit card numbers.', version: '2.1.1', containerImage: 'babirye/bulkextractor:2.1.1', port: 9994 },
+    31→    31→  { name: 'FTK Imager', category: 'computer', description: 'Forensic disk imaging and preview tool for evidence acquisition.', version: '4.7.3', containerImage: 'babirye/ftk-imager:4.7.3', port: 9993 },
+    32→    32→  { name: 'LiME Forensics', category: 'memory', description: 'Linux Memory Extractor for live RAM acquisition.', version: '1.9.1', containerImage: 'babirye/lime:1.9.1', port: 9992 },
+    33→    33→  { name: 'ADB Forensics Kit', category: 'android', description: 'ADB-based Android forensic data extraction and analysis.', version: '3.2.0', containerImage: 'babirye/adb-forensics:3.2.0', port: 9991 },
+    34→    34→  { name: 'iOS Backup Analyzer', category: 'ios', description: 'Parses and analyzes iTunes/Finder iOS backup files.', version: '2.8.0', containerImage: 'babirye/ios-backup:2.8.0', port: 9990 },
+    35→    35→  { name: 'NetworkMiner', category: 'network', description: 'Network forensic analysis tool for passive network sniffing and host analysis.', version: '2.9.0', containerImage: 'babirye/networkminer:2.9.0', port: 9989 },
+    36→    36→  { name: 'Plaso/Log2Timeline', category: 'advanced', description: 'Super timeline generation engine for correlating events across multiple sources.', version: '20240129', containerImage: 'babirye/plaso:2024', port: 9988 },
+    37→    37→];
+    38→    38→
+    39→    39→const OFFENSIVE_TOOLS = [
+    40→    40→  { name: 'Nmap Scanner', category: 'recon', description: 'Network discovery and security auditing scanner.', version: '7.94', containerImage: 'babirye/nmap:7.94', port: 8100, riskLevel: 'medium' },
+    41→    41→  { name: 'Metasploit Framework', category: 'exploitation', description: 'Comprehensive penetration testing framework.', version: '6.3.44', containerImage: 'babirye/metasploit:6.3.44', port: 8101, riskLevel: 'critical' },
+    42→    42→  { name: 'Cobalt Strike', category: 'c2', description: 'Adversary simulation and red team operations platform.', version: '4.9', containerImage: 'babirye/cobaltstrike:4.9', port: 8102, riskLevel: 'critical' },
+    43→    43→  { name: 'Burp Suite Pro', category: 'recon', description: 'Web application security testing platform.', version: '2024.2', containerImage: 'babirye/burpsuite:2024.2', port: 8103, riskLevel: 'medium' },
+    44→    44→  { name: 'Hashcat', category: 'post_exploitation', description: 'Advanced password recovery and hash cracking.', version: '6.2.6', containerImage: 'babirye/hashcat:6.2.6', port: 8104, riskLevel: 'high' },
+    45→    45→  { name: 'John the Ripper', category: 'post_exploitation', description: 'Password hash cracker supporting many formats.', version: '1.9.0-jumbo-1', containerImage: 'babirye/john:1.9.0', port: 8105, riskLevel: 'high' },
+    46→    46→  { name: 'Gobuster', category: 'recon', description: 'Directory/file and DNS busting tool.', version: '3.6.0', containerImage: 'babirye/gobuster:3.6.0', port: 8106, riskLevel: 'low' },
+    47→    47→  { name: 'SQLMap', category: 'exploitation', description: 'Automated SQL injection and database takeover tool.', version: '1.8', containerImage: 'babirye/sqlmap:1.8', port: 8107, riskLevel: 'critical' },
+    48→    48→  { name: 'Nikto', category: 'recon', description: 'Web server scanner for dangerous files and misconfigurations.', version: '2.5.0', containerImage: 'babirye/nikto:2.5.0', port: 8108, riskLevel: 'medium' },
+    49→    49→  { name: 'Hydra', category: 'exploitation', description: 'Fast and flexible online password cracking tool.', version: '9.5', containerImage: 'babirye/hydra:9.5', port: 8109, riskLevel: 'high' },
+    50→    50→  { name: 'Aircrack-ng', category: 'wireless', description: 'Complete suite of WiFi security assessment tools.', version: '1.7', containerImage: 'babirye/aircrack:1.7', port: 8110, riskLevel: 'high' },
+    51→    51→  { name: 'Responder', category: 'lateral', description: 'LLMNR, NBT-NS, and MDNS poisoner for credential capture.', version: '3.0.0', containerImage: 'babirye/responder:3.0.0', port: 8111, riskLevel: 'high' },
+    52→    52→  { name: 'Mimikatz', category: 'post_exploitation', description: 'Credential extraction and post-exploitation toolkit.', version: '2.2.0', containerImage: 'babirye/mimikatz:2.2.0', port: 8112, riskLevel: 'critical' },
+    53→    53→  { name: 'Sliver C2', category: 'c2', description: 'Adversary emulation framework with cross-platform implants.', version: '1.5.41', containerImage: 'babirye/sliver:1.5.41', port: 8113, riskLevel: 'critical' },
+    54→    54→  { name: 'Empire', category: 'c2', description: 'Post-exploitation and adversary emulation framework.', version: '5.9.3', containerImage: 'babirye/empire:5.9.3', port: 8114, riskLevel: 'critical' },
+    55→    55→  { name: 'BloodHound CE', category: 'recon', description: 'Active Directory attack path analysis tool.', version: '4.3.1', containerImage: 'babirye/bloodhound:4.3.1', port: 8115, riskLevel: 'high' },
+    56→    56→  { name: 'Sublist3r', category: 'recon', description: 'Subdomain enumeration using multiple search engines.', version: '1.0.0', containerImage: 'babirye/sublist3r:1.0.0', port: 8116, riskLevel: 'low' },
+    57→    57→  { name: 'Wpscan', category: 'exploitation', description: 'WordPress vulnerability scanner.', version: '3.8.22', containerImage: 'babirye/wpscan:3.8.22', port: 8117, riskLevel: 'medium' },
+    58→    58→  { name: 'Impacket', category: 'lateral', description: 'Python classes for working with network protocols.', version: '0.11.0', containerImage: 'babirye/impacket:0.11.0', port: 8118, riskLevel: 'high' },
+    59→    59→  { name: 'Setoolkit', category: 'social_engineering', description: 'Social engineering toolkit for phishing and client-side attacks.', version: '8.0.4', containerImage: 'babirye/setoolkit:8.0.4', port: 8119, riskLevel: 'high' },
+    60→    60→];
+    61→    61→
+    62→    62→const DEFENSIVE_TOOLS = [
+    63→    63→  { name: 'Suricata IDS/IPS', category: 'network', description: 'High-performance network intrusion detection and prevention system.', version: '7.0.4', containerImage: 'babirye/suricata:7.0.4', port: 8200 },
+    64→    64→  { name: 'Snort', category: 'network', description: 'Open-source network intrusion detection system.', version: '3.1.52.0', containerImage: 'babirye/snort:3.1.52', port: 8201 },
+    65→    65→  { name: 'Zeek (Bro)', category: 'network', description: 'Powerful network analysis framework for network security monitoring.', version: '6.2.0', containerImage: 'babirye/zeek:6.2.0', port: 8202 },
+    66→    66→  { name: 'OSSEC Wazuh', category: 'endpoint', description: 'Host-based intrusion detection and security monitoring.', version: '4.8.0', containerImage: 'babirye/wazuh:4.8.0', port: 8203 },
+    67→    67→  { name: 'ClamAV', category: 'endpoint', description: 'Open-source antivirus engine for malware detection.', version: '1.2.1', containerImage: 'babirye/clamav:1.2.1', port: 8204 },
+    68→    68→  { name: 'ModSecurity', category: 'application', description: 'Web application firewall engine embedded in web servers.', version: '3.0.12', containerImage: 'babirye/modsecurity:3.0.12', port: 8205 },
+    69→    69→  { name: 'Fail2Ban', category: 'identity', description: 'Intrusion prevention framework that bans malicious IPs.', version: '1.0.2', containerImage: 'babirye/fail2ban:1.0.2', port: 8206 },
+    70→    70→  { name: 'Vault (HashiCorp)', category: 'data', description: 'Secrets management and data protection platform.', version: '1.15.4', containerImage: 'babirye/vault:1.15.4', port: 8207 },
+    71→    71→  { name: 'Falco', category: 'cloud', description: 'Cloud-native runtime security and threat detection.', version: '0.37.0', containerImage: 'babirye/falco:0.37.0', port: 8208 },
+    72→    72→  { name: 'Trivy Scanner', category: 'cloud', description: 'Comprehensive security scanner for containers and IaC.', version: '0.48.0', containerImage: 'babirye/trivy:0.48.0', port: 8209 },
+    73→    73→  { name: 'CrowdStrike Falcon', category: 'endpoint', description: 'Cloud-delivered endpoint detection and response platform.', version: '7.12.0', containerImage: 'babirye/crowdstrike:7.12.0', port: 8210 },
+    74→    74→  { name: 'OWASP ZAP', category: 'application', description: 'Integrated web application security testing tool.', version: '2.14.0', containerImage: 'babirye/zap:2.14.0', port: 8211 },
+    75→    75→  { name: 'Grafana Security', category: 'network', description: 'Security monitoring and alerting dashboard.', version: '10.3.1', containerImage: 'babirye/grafana-sec:10.3.1', port: 8212 },
+    76→    76→  { name: 'Elastic Security', category: 'endpoint', description: 'Endpoint security and SIEM integration with Elastic stack.', version: '8.12.0', containerImage: 'babirye/elastic-sec:8.12.0', port: 8213 },
+    77→    77→  { name: 'Keycloak', category: 'identity', description: 'Open-source identity and access management solution.', version: '23.0.4', containerImage: 'babirye/keycloak:23.0.4', port: 8214 },
+    78→    78→  { name: 'OPA Gatekeeper', category: 'application', description: 'Open Policy Agent for fine-grained authorization.', version: '0.60.0', containerImage: 'babirye/opa:0.60.0', port: 8215 },
+    79→    79→  { name: 'Aqua Security', category: 'cloud', description: 'Container and cloud-native application security platform.', version: '2024.1', containerImage: 'babirye/aqua:2024.1', port: 8216 },
+    80→    80→  { name: 'Duo Security MFA', category: 'identity', description: 'Multi-factor authentication and access security.', version: '5.4.0', containerImage: 'babirye/duo:5.4.0', port: 8217 },
+    81→    81→  { name: 'Lacework', category: 'cloud', description: 'Automated cloud security platform with polygraph analysis.', version: '8.2.0', containerImage: 'babirye/lacework:8.2.0', port: 8218 },
+    82→    82→  { name: 'Terraform Sentinel', category: 'cloud', description: 'Policy-as-code framework for infrastructure security.', version: '1.4.0', containerImage: 'babirye/sentinel:1.4.0', port: 8219 },
+    83→    83→];
+    84→    84→
+    85→    85→const MICRO_DEFENSIVE_TOOLS = [
+    86→    86→  { name: 'XSS Sanitizer', category: 'input_validation', description: 'Cross-site scripting input validation and sanitization engine.', blockCount: 1247 },
+    87→    87→  { name: 'SQL Injection Guard', category: 'input_validation', description: 'Parameterized query enforcement and SQL injection prevention.', blockCount: 892 },
+    88→    88→  { name: 'HTML Entity Encoder', category: 'output_encoding', description: 'Context-aware HTML output encoding for XSS prevention.', blockCount: 2103 },
+    89→    89→  { name: 'JS Context Escaper', category: 'output_encoding', description: 'JavaScript context output escaping for script injection prevention.', blockCount: 456 },
+    90→    90→  { name: 'URL Sanitizer', category: 'sanitization', description: 'URL validation and sanitization to prevent redirect and protocol attacks.', blockCount: 334 },
+    91→    91→  { name: 'File Upload Guard', category: 'sanitization', description: 'File upload validation with magic byte verification and content scanning.', blockCount: 178 },
+    92→    92→  { name: 'Content Security Policy', category: 'header_security', description: 'Dynamic CSP header generation and enforcement engine.', blockCount: 567 },
+    93→    93→  { name: 'HSTS Enforcer', category: 'header_security', description: 'HTTP Strict Transport Security header management.', blockCount: 0 },
+    94→    94→  { name: 'X-Frame Options Guard', category: 'header_security', description: 'Clickjacking prevention via X-Frame-Options and frame-ancestors CSP.', blockCount: 89 },
+    95→    95→  { name: 'Cookie Security Manager', category: 'cookie_security', description: 'Secure, HttpOnly, SameSite cookie attribute enforcement.', blockCount: 234 },
+    96→    96→  { name: 'CORS Policy Engine', category: 'cors', description: 'Fine-grained CORS policy enforcement with origin whitelisting.', blockCount: 1456 },
+    97→    97→  { name: 'Rate Limiter', category: 'rate_limiting', description: 'Token bucket and sliding window rate limiting per endpoint.', blockCount: 34521 },
+    98→    98→  { name: 'Integrity Checker', category: 'integrity', description: 'Subresource Integrity and data integrity verification.', blockCount: 67 },
+    99→    99→  { name: 'CSRF Token Manager', category: 'header_security', description: 'Anti-CSRF token generation and validation with double-submit cookie pattern.', blockCount: 789 },
+   100→   100→  { name: 'Request Size Limiter', category: 'rate_limiting', description: 'Request body size and parameter count limiting.', blockCount: 56 },
+   101→   101→  { name: 'Parameter Pollution Guard', category: 'input_validation', description: 'HTTP parameter pollution detection and prevention.', blockCount: 34 },
+   102→   102→  { name: 'Path Traversal Guard', category: 'sanitization', description: 'File path traversal and directory climb attack prevention.', blockCount: 112 },
+   103→   103→  { name: 'JSON Schema Validator', category: 'input_validation', description: 'Request body JSON schema validation engine.', blockCount: 2890 },
+   104→   104→  { name: 'Response Cache Control', category: 'header_security', description: 'Cache-Control and Pragma header management for sensitive data.', blockCount: 0 },
+   105→   105→  { name: 'Referrer Policy Guard', category: 'header_security', description: 'Referrer-Policy header management for privacy protection.', blockCount: 0 },
+   106→   106→];
+   107→   107→
+   108→   108→const SENSORS = [
+   109→   109→  { name: 'Phased Array Radar', type: 'radar', subtype: 'phased_array', description: 'Multi-target tracking phased array radar system.', status: 'online', range: 400.0, frequency: 'X-band (8-12 GHz)', sensitivity: 0.95 },
+   110→   110→  { name: 'Synthetic Aperture Radar', type: 'radar', subtype: 'sar', description: 'High-resolution imaging radar for terrain mapping.', status: 'online', range: 250.0, frequency: 'Ku-band (12-18 GHz)', sensitivity: 0.88 },
+   111→   111→  { name: 'Doppler Radar', type: 'radar', subtype: 'doppler', description: 'Velocity measurement and target tracking radar.', status: 'online', range: 150.0, frequency: 'S-band (2-4 GHz)', sensitivity: 0.82 },
+   112→   112→  { name: 'Active Sonar Pinger', type: 'sonar', subtype: 'active', description: 'Active sonar system for underwater target detection.', status: 'online', range: 50.0, frequency: '12 kHz', sensitivity: 0.91 },
+   113→   113→  { name: 'Passive Sonar Array', type: 'sonar', subtype: 'passive', description: 'Passive acoustic listening array for submarine detection.', status: 'online', range: 200.0, frequency: 'Broadband 1-20 kHz', sensitivity: 0.94 },
+   114→   114→  { name: 'Side-Scan Sonar', type: 'sonar', subtype: 'side_scan', description: 'Seafloor imaging sonar for object detection and mapping.', status: 'offline', range: 30.0, frequency: '100-800 kHz', sensitivity: 0.76 },
+   115→   115→  { name: 'LiDAR Mapper', type: 'lidar', subtype: 'aerial', description: 'Airborne LiDAR for 3D terrain and structure mapping.', status: 'online', range: 2.0, frequency: '905 nm', sensitivity: 0.97 },
+   116→   116→  { name: 'Ground LiDAR', type: 'lidar', subtype: 'ground', description: 'Terrestrial LiDAR scanner for high-precision 3D modeling.', status: 'online', range: 0.5, frequency: '1550 nm', sensitivity: 0.99 },
+   117→   117→  { name: 'Solid-State LiDAR', type: 'lidar', subtype: 'solid_state', description: 'Compact solid-state LiDAR for autonomous navigation.', status: 'online', range: 0.3, frequency: '905 nm', sensitivity: 0.85 },
+   118→   118→  { name: 'Acoustic Microphone Array', type: 'acoustic', subtype: 'array', description: 'Multi-directional acoustic sensor array for sound localization.', status: 'online', range: 1.0, frequency: '20 Hz - 20 kHz', sensitivity: 0.78 },
+   119→   119→  { name: 'Seismic Sensor', type: 'acoustic', subtype: 'seismic', description: 'Ground vibration and seismic event detection sensor.', status: 'online', range: 5.0, frequency: '0.1-50 Hz', sensitivity: 0.83 },
+   120→   120→  { name: 'Infrasound Monitor', type: 'acoustic', subtype: 'infrasound', description: 'Low-frequency infrasound monitoring for explosions and events.', status: 'offline', range: 1000.0, frequency: '0.01-20 Hz', sensitivity: 0.72 },
+   121→   121→  { name: 'EW Signal Interceptor', type: 'ew', subtype: 'sigint', description: 'Signals intelligence interceptor for communication monitoring.', status: 'online', range: 500.0, frequency: 'HF-UHF', sensitivity: 0.92 },
+   122→   122→  { name: 'Spectrum Analyzer', type: 'ew', subtype: 'spectrum', description: 'Real-time RF spectrum analysis and anomaly detection.', status: 'online', range: 100.0, frequency: 'DC - 40 GHz', sensitivity: 0.96 },
+   123→   123→  { name: 'Jammer Detector', type: 'ew', subtype: 'jamming', description: 'RF jamming and interference detection and localization.', status: 'online', range: 200.0, frequency: 'Broadband', sensitivity: 0.88 },
+   124→   124→  { name: 'Weather Radar', type: 'radar', subtype: 'weather', description: 'Meteorological radar for weather pattern monitoring.', status: 'online', range: 300.0, frequency: 'C-band (4-8 GHz)', sensitivity: 0.70 },
+   125→   125→  { name: 'Perimeter Radar', type: 'radar', subtype: 'perimeter', description: 'Short-range perimeter intrusion detection radar.', status: 'online', range: 1.0, frequency: 'K-band (18-27 GHz)', sensitivity: 0.93 },
+   126→   126→  { name: 'Underwater Acoustic Sensor', type: 'acoustic', subtype: 'underwater', description: 'Deep water acoustic sensor for submarine tracking.', status: 'offline', range: 100.0, frequency: '1-10 kHz', sensitivity: 0.80 },
+   127→   127→  { name: 'Drone Detection Radar', type: 'radar', subtype: 'drone', description: 'Specialized radar for small UAV/drone detection and tracking.', status: 'online', range: 5.0, frequency: 'Ku-band', sensitivity: 0.87 },
+   128→   128→  { name: 'Direction Finding System', type: 'ew', subtype: 'df', description: 'RF direction finding for emitter localization.', status: 'online', range: 150.0, frequency: 'VHF-UHF', sensitivity: 0.84 },
+   129→   129→];
+   130→   130→
+   131→   131→const WALL_GUARDS = [
+   132→   132→  { name: 'SQL Injection Wall', description: 'Prevents agents from executing SQL injection attacks against BABIRYE infrastructure.', category: 'injection', severity: 'critical', blockCount: 234 },
+   133→   133→  { name: 'Data Exfiltration Guard', description: 'Monitors and blocks unauthorized data exfiltration from the platform.', category: 'exfiltration', severity: 'critical', blockCount: 89 },
+   134→   134→  { name: 'Privilege Escalation Wall', description: 'Prevents privilege escalation attempts within the agent runtime.', category: 'privilege', severity: 'critical', blockCount: 156 },
+   135→   135→  { name: 'Binary Integrity Guard', description: 'Verifies integrity of all executable binaries before execution.', category: 'integrity', severity: 'high', blockCount: 45 },
+   136→   136→  { name: 'Cryptographic Key Protector', description: 'Prevents unauthorized access to cryptographic keys and certificates.', category: 'crypto', severity: 'critical', blockCount: 12 },
+   137→   137→  { name: 'Supply Chain Validator', description: 'Validates supply chain integrity for all deployed packages.', category: 'supply_chain', severity: 'high', blockCount: 7 },
+   138→   138→  { name: 'Input Sanitization Gate', description: 'Enforces input sanitization across all API endpoints and agent interfaces.', category: 'input_validation', severity: 'high', blockCount: 5678 },
+   139→   139→];
+   140→   140→
+   141→   141→const TASK_TYPES = ['forensic', 'offensive', 'defensive', 'micro_defensive', 'sensors', 'vip', 'potentials'];
+   142→   142→const TASK_STATUSES = ['pending', 'running', 'completed', 'failed', 'cancelled'];
+   143→   143→const ALERT_SEVERITIES = ['info', 'low', 'medium', 'high', 'critical'];
+   144→   144→const ALERT_TYPES = ['intrusion', 'malware', 'anomaly', 'policy_violation', 'data_breach', 'dos', 'phishing'];
+   145→   145→
+   146→   146→// ============================================================================
+   147→   147→// MAIN SEED FUNCTION
+   148→   148→// ============================================================================
+   149→   149→
+   150→   150→export async function seedDatabase(): Promise<{ success: boolean; message: string; stats: Record<string, number> }> {
+   151→   151→  const stats: Record<string, number> = {};
+   152→   152→
+   153→   153→  try {
+   154→   154→    // 1. Create admin user if none exists
+   155→   155→    const userCount = await db.user.count();
+   156→   156→    if (userCount === 0) {
+   157→   157→      const passwordHash = await hashPassword('Admin@BABIRYE2024!');
+   158→   158→      await db.user.create({
+   159→   159→        data: {
+   160→   160→          email: 'admin@babirye.local',
+   161→   161→          passwordHash,
+   162→   162→          name: 'System Administrator',
+   163→   163→          role: 'admin',
+   164→   164→          mfaEnabled: false,
+   165→   165→          isActive: true,
+   166→   166→        },
+   167→   167→      });
+   168→   168→      stats.users = 1;
+   169→   169→    } else {
+   170→   170→      stats.users = userCount;
+   171→   171→    }
+   172→   172→
+   173→   173→    // 2. Seed agents
+   174→   174→    const existingAgents = await db.agent.count();
+   175→   175→    if (existingAgents === 0) {
+   176→   176→      for (const agent of AGENTS) {
+   177→   177→        await db.agent.create({
+   178→   178→          data: {
+   179→   179→            ...agent,
+   180→   180→            config: JSON.stringify({ maxConcurrency: 5, timeout: 300, retryAttempts: 3 }),
+   181→   181→            metrics: JSON.stringify({ tasksCompleted: 0, tasksFailed: 0, avgResponseTime: 0, uptime: 99.9 }),
+   182→   182→            lastActivityAt: agent.status === 'running' ? new Date() : null,
+   183→   183→          },
+   184→   184→        });
+   185→   185→      }
+   186→   186→      stats.agents = AGENTS.length;
+   187→   187→    } else {
+   188→   188→      stats.agents = existingAgents;
+   189→   189→    }
+   190→   190→
+   191→   191→    // 3. Seed forensic tools
+   192→   192→    const existingForensic = await db.forensicTool.count();
+   193→   193→    if (existingForensic === 0) {
+   194→   194→      for (const tool of FORENSIC_TOOLS) {
+   195→   195→        await db.forensicTool.create({ data: tool });
+   196→   196→      }
+   197→   197→      stats.forensicTools = FORENSIC_TOOLS.length;
+   198→   198→    } else {
+   199→   199→      stats.forensicTools = existingForensic;
+   200→   200→    }
+   201→   201→
+   202→   202→    // 4. Seed offensive tools
+   203→   203→    const existingOffensive = await db.offensiveTool.count();
+   204→   204→    if (existingOffensive === 0) {
+   205→   205→      for (const tool of OFFENSIVE_TOOLS) {
+   206→   206→        await db.offensiveTool.create({ data: tool });
+   207→   207→      }
+   208→   208→      stats.offensiveTools = OFFENSIVE_TOOLS.length;
+   209→   209→    } else {
+   210→   210→      stats.offensiveTools = existingOffensive;
+   211→   211→    }
+   212→   212→
+   213→   213→    // 5. Seed defensive tools
+   214→   214→    const existingDefensive = await db.defensiveTool.count();
+   215→   215→    if (existingDefensive === 0) {
+   216→   216→      for (const tool of DEFENSIVE_TOOLS) {
+   217→   217→        await db.defensiveTool.create({ data: tool });
+   218→   218→      }
+   219→   219→      stats.defensiveTools = DEFENSIVE_TOOLS.length;
+   220→   220→    } else {
+   221→   221→      stats.defensiveTools = existingDefensive;
+   222→   222→    }
+   223→   223→
+   224→   224→    // 6. Seed micro-defensive tools
+   225→   225→    const existingMicroDef = await db.microDefensiveTool.count();
+   226→   226→    if (existingMicroDef === 0) {
+   227→   227→      for (const tool of MICRO_DEFENSIVE_TOOLS) {
+   228→   228→        await db.microDefensiveTool.create({
+   229→   229→          data: {
+   230→   230→            name: tool.name,
+   231→   231→            category: tool.category,
+   232→   232→            description: tool.description,
+   233→   233→            blockCount: tool.blockCount,
+   234→   234→          },
+   235→   235→        });
+   236→   236→      }
+   237→   237→      stats.microDefensiveTools = MICRO_DEFENSIVE_TOOLS.length;
+   238→   238→    } else {
+   239→   239→      stats.microDefensiveTools = existingMicroDef;
+   240→   240→    }
+   241→   241→
+   242→   242→    // 7. Seed sensors
+   243→   243→    const existingSensors = await db.sensor.count();
+   244→   244→    if (existingSensors === 0) {
+   245→   245→      for (const sensor of SENSORS) {
+   246→   246→        await db.sensor.create({ data: sensor });
+   247→   247→      }
+   248→   248→      stats.sensors = SENSORS.length;
+   249→   249→    } else {
+   250→   250→      stats.sensors = existingSensors;
+   251→   251→    }
+   252→   252→
+   253→   253→    // 8. Seed wall guards
+   254→   254→    const existingGuards = await db.wallGuard.count();
+   255→   255→    if (existingGuards === 0) {
+   256→   256→      for (const guard of WALL_GUARDS) {
+   257→   257→        await db.wallGuard.create({
+   258→   258→          data: {
+   259→   259→            ...guard,
+   260→   260→            config: JSON.stringify({ autoBlock: true, logLevel: 'verbose', notifyOnBlock: true }),
+   261→   261→          },
+   262→   262→        });
+   263→   263→      }
+   264→   264→      stats.wallGuards = WALL_GUARDS.length;
+   265→   265→    } else {
+   266→   266→      stats.wallGuards = existingGuards;
+   267→   267→    }
+   268→   268→
+   269→   269→    // 9. Seed sample tasks
+   270→   270→    const existingTasks = await db.task.count();
+   271→   271→    if (existingTasks === 0) {
+   272→   272→      const agents = await db.agent.findMany({ select: { id: true, domain: true } });
+   273→   273→      const agentMap = new Map(agents.map((a) => [a.domain, a.id]));
+   274→   274→
+   275→   275→      const sampleTasks = [
+   276→   276→        { type: 'forensic', status: 'completed', priority: 7, title: 'Memory dump analysis — workstation-042', progress: 100 },
+   277→   277→        { type: 'forensic', status: 'running', priority: 8, title: 'Mobile device extraction — Samsung Galaxy S24', progress: 65 },
+   278→   278→        { type: 'forensic', status: 'pending', priority: 5, title: 'Network traffic analysis — DMZ segment', progress: 0 },
+   279→   279→        { type: 'offensive', status: 'completed', priority: 9, title: 'External penetration test — perimeter assessment', progress: 100 },
+   280→   280→        { type: 'offensive', status: 'running', priority: 6, title: 'Internal network enumeration — Active Directory', progress: 40 },
+   281→   281→        { type: 'offensive', status: 'failed', priority: 7, title: 'Social engineering campaign — phishing simulation', progress: 80 },
+   282→   282→        { type: 'defensive', status: 'running', priority: 10, title: 'Active threat hunting — endpoint telemetry', progress: 30 },
+   283→   283→        { type: 'defensive', status: 'completed', priority: 8, title: 'Firewall rule audit and optimization', progress: 100 },
+   284→   284→        { type: 'defensive', status: 'pending', priority: 4, title: 'Vulnerability scan — quarterly assessment', progress: 0 },
+   285→   285→        { type: 'micro_defensive', status: 'completed', priority: 6, title: 'CORS policy review and update', progress: 100 },
+   286→   286→        { type: 'sensors', status: 'running', priority: 7, title: 'Perimeter radar calibration and testing', progress: 55 },
+   287→   287→        { type: 'sensors', status: 'pending', priority: 3, title: 'Acoustic array deployment — sector 7', progress: 0 },
+   288→   288→        { type: 'potentials', status: 'completed', priority: 5, title: 'Capability gap analysis — Q1 assessment', progress: 100 },
+   289→   289→        { type: 'defensive', status: 'pending', priority: 9, title: 'Incident response plan update — tabletop exercise', progress: 0 },
+   290→   290→        { type: 'forensic', status: 'pending', priority: 6, title: 'Disk image acquisition — evidence preservation', progress: 0 },
+   291→   291→      ];
+   292→   292→
+   293→   293→      for (const task of sampleTasks) {
+   294→   294→        const agentId = agentMap.get(task.type) || null;
+   295→   295→        await db.task.create({
+   296→   296→          data: {
+   297→   297→            agentId,
+   298→   298→            type: task.type,
+   299→   299→            status: task.status,
+   300→   300→            priority: task.priority,
+   301→   301→            input: JSON.stringify({ title: task.title }),
+   302→   302→            output: task.status === 'completed' ? JSON.stringify({ summary: `Completed: ${task.title}`, artifacts: [] }) : null,
+   303→   303→            errorMessage: task.status === 'failed' ? 'Phishing simulation detected by email gateway — target was security-aware' : null,
+   304→   304→            progress: task.progress,
+   305→   305→            startedAt: task.status !== 'pending' ? new Date(Date.now() - Math.random() * 7 * 86400000) : null,
+   306→   306→            completedAt: task.status === 'completed' || task.status === 'failed' ? new Date() : null,
+   307→   307→          },
+   308→   308→        });
+   309→   309→      }
+   310→   310→      stats.tasks = sampleTasks.length;
+   311→   311→    } else {
+   312→   312→      stats.tasks = existingTasks;
+   313→   313→    }
+   314→   314→
+   315→   315→    // 10. Seed security alerts
+   316→   316→    const existingAlerts = await db.securityAlert.count();
+   317→   317→    if (existingAlerts === 0) {
+   318→   318→      const sampleAlerts = [
+   319→   319→        { source: 'Suricata IDS/IPS', severity: 'critical', type: 'intrusion', title: 'Critical: Brute force attack detected on SSH', description: 'Multiple failed SSH login attempts from 203.0.113.42 — 5,000+ attempts in 10 minutes.' },
+   320→   320→        { source: 'Falco', severity: 'high', type: 'anomaly', title: 'Suspicious container exec detected', description: 'Unexpected shell execution inside production container web-app-01.' },
+   321→   321→        { source: 'Wazuh', severity: 'medium', type: 'policy_violation', title: 'Unauthorized software installation detected', description: 'User jsmith installed uTorrent on workstation-017.' },
+   322→   322→        { source: 'ClamAV', severity: 'high', type: 'malware', title: 'Trojan detected in email attachment', description: 'Trojan.Win32.Emotet detected in incoming email to finance department.' },
+   323→   323→        { source: 'ModSecurity', severity: 'critical', type: 'intrusion', title: 'SQL injection attempt blocked', description: 'Malicious SQL payload blocked on /api/users endpoint from 198.51.100.77.' },
+   324→   324→        { source: 'Grafana Security', severity: 'low', type: 'anomaly', title: 'Unusual login pattern detected', description: 'Admin account accessed from new geographic location.' },
+   325→   325→        { source: 'Trivy', severity: 'medium', type: 'policy_violation', title: 'Critical vulnerability in base image', description: 'CVE-2024-0001: RCE in nginx:1.25-alpine base image.' },
+   326→   326→        { source: 'Vault', severity: 'info', type: 'anomaly', title: 'High volume of secret reads', description: '3x normal secret read volume from microservice auth-svc.' },
+   327→   327→        { source: 'Suricata IDS/IPS', severity: 'high', type: 'dos', title: 'DDoS attack pattern detected', description: 'Volumetric UDP flood detected targeting external-facing services.' },
+   328→   328→        { source: 'Duo Security', severity: 'medium', type: 'phishing', title: 'Phishing MFA bypass attempt', description: 'Real-time phishing proxy detected targeting MFA authentication flow.' },
+   329→   329→      ];
+   330→   330→
+   331→   331→      for (const alert of sampleAlerts) {
+   332→   332→        await db.securityAlert.create({
+   333→   333→          data: {
+   334→   334→            ...alert,
+   335→   335→            status: alert.severity === 'critical' ? 'investigating' : alert.severity === 'info' ? 'resolved' : 'new',
+   336→   336→          },
+   337→   337→        });
+   338→   338→      }
+   339→   339→      stats.alerts = sampleAlerts.length;
+   340→   340→    } else {
+   341→   341→      stats.alerts = existingAlerts;
+   342→   342→    }
+   343→   343→
+   344→   344→    // 11. Seed audit logs
+   345→   345→    const existingLogs = await db.auditLog.count();
+   346→   346→    if (existingLogs === 0) {
+   347→   347→      const admin = await db.user.findFirst({ select: { id: true } });
+   348→   348→      const auditActions = [
+   349→   349→        { action: 'login', resource: 'auth', details: '{"method":"password"}', statusCode: 200 },
+   350→   350→        { action: 'agent_start', resource: 'agent', details: '{"agent":"Defensive Agent"}', statusCode: 200 },
+   351→   351→        { action: 'task_create', resource: 'task', details: '{"type":"forensic"}', statusCode: 200 },
+   352→   352→        { action: 'tool_deploy', resource: 'tool', details: '{"tool":"Suricata IDS/IPS"}', statusCode: 200 },
+   353→   353→        { action: 'wall_block', resource: 'wall_guard', details: '{"guard":"SQL Injection Wall","reason":"detected"}', statusCode: 403 },
+   354→   354→        { action: 'sensor_online', resource: 'sensor', details: '{"sensor":"Phased Array Radar"}', statusCode: 200 },
+   355→   355→        { action: 'config_update', resource: 'system', details: '{"setting":"log_level","old":"info","new":"debug"}', statusCode: 200 },
+   356→   356→        { action: 'user_create', resource: 'user', details: '{"role":"analyst"}', statusCode: 200 },
+   357→   357→        { action: 'alert_acknowledge', resource: 'alert', details: '{"alertId":"critical-001"}', statusCode: 200 },
+   358→   358→        { action: 'seed_database', resource: 'system', details: '{"version":"10.0.0"}', statusCode: 200 },
+   359→   359→      ];
+   360→   360→
+   361→   361→      for (const entry of auditActions) {
+   362→   362→        await db.auditLog.create({
+   363→   363→          data: {
+   364→   364→            userId: admin?.id,
+   365→   365→            ...entry,
+   366→   366→            ipAddress: '10.0.0.1',
+   367→   367→            userAgent: 'BABIRYE-Admin/10.0.0',
+   368→   368→            createdAt: new Date(Date.now() - Math.random() * 24 * 86400000),
+   369→   369→          },
+   370→   370→        });
+   371→   371→      }
+   372→   372→      stats.auditLogs = auditActions.length;
+   373→   373→    } else {
+   374→   374→      stats.auditLogs = existingLogs;
+   375→   375→    }
+   376→   376→
+   377→   377→    return {
+   378→   378→      success: true,
+   379→   379→      message: 'Database seeded successfully',
+   380→   380→      stats,
+   381→   381→    };
+   382→   382→  } catch (error) {
+   383→   383→    console.error('Seed error:', error);
+   384→   384→    return {
+   385→   385→      success: false,
+   386→   386→      message: `Seed failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+   387→   387→      stats,
+   388→   388→    };
+   389→   389→  }
+   390→   390→}

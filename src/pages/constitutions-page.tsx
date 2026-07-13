@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import ReactMarkdown from "react-markdown";
 import {
   BookOpen, Pencil, Loader2, Eye, Filter,
 } from "lucide-react";
