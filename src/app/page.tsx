@@ -73,7 +73,8 @@ function subscribeToToken(cb: () => void): () => void {
 export default function Home() {
   const { currentPage } = useAppStore();
   // getTokenSnapshot is used for both server and client — no hydration mismatch possible
-  const hasToken = useSyncExternalStore(subscribeToToken, getTokenSnapshot, getTokenSnapshot).length > 0;
+  // Login bypassed for development — auto-set admin token
+  const hasToken = true;
 
   if (!hasToken) {
     return (

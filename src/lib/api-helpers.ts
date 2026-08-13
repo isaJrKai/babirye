@@ -97,15 +97,13 @@ function extractErrorMessage(status: number, body: ApiErrorBody): string {
 function handleErrorResponse(response: Response, body: ApiErrorBody): never {
   const message = extractErrorMessage(response.status, body);
 
-  // Trigger redirect for 401 (unauthenticated)
-  if (response.status === 401 && typeof window !== 'undefined') {
-    // Clear stale token
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    // Only redirect if not already on the login page
-    if (!window.location.pathname.includes('/login')) {
-      window.location.href = '/?view=login';
-    }
-  }
+  // DEV BYPASS: don't redirect on 401
+  // if (response.status === 401 && typeof window !== 'undefined') {
+  //   localStorage.removeItem(AUTH_TOKEN_KEY);
+  //   if (!window.location.pathname.includes('/login')) {
+  //     window.location.href = '/?view=login';
+  //   }
+  // }
 
   throw new ApiClientError(message, response.status, body);
 }
