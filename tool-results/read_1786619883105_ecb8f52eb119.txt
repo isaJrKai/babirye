@@ -1,0 +1,686 @@
+     1→'use client';
+     2→
+     3→import { motion } from 'framer-motion';
+     4→import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+     5→import {
+     6→  Bot, ShieldAlert, Bell, Radio, Cpu, MemoryStick, Network,
+     7→  Activity, AlertTriangle, CheckCircle2, XCircle, Clock,
+     8→  TrendingUp, Lock, Eye, Bug, Zap, Shield, Layers, Fingerprint,
+     9→  Globe, Wifi, Satellite, FileWarning, ArrowUpRight, ArrowDownRight,
+    10→  Scan, Play, Download, ShieldCheck, ShieldOff, Sword, Target,
+    11→  Server, HardDrive, ThermometerSun, Heart, Crown, Truck, Plane, Watch,
+    12→} from 'lucide-react';
+    13→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    14→import { Badge } from '@/components/ui/badge';
+    15→import { Progress } from '@/components/ui/progress';
+    16→import { Skeleton } from '@/components/ui/skeleton';
+    17→import { ScrollArea } from '@/components/ui/scroll-area';
+    18→import { Separator } from '@/components/ui/separator';
+    19→import { Button } from '@/components/ui/button';
+    20→import { useApi } from '@/hooks/use-api';
+    21→import { AgentMetricsChart } from '@/components/charts/agent-metrics-chart';
+    22→import { AlertTimelineChart } from '@/components/charts/alert-timeline-chart';
+    23→import { ThreatLevelGauge } from '@/components/charts/threat-level-gauge';
+    24→import { SensorCoverageChart } from '@/components/charts/sensor-coverage-chart';
+    25→import { ActivityTimeline } from '@/components/shared/activity-timeline';
+    26→import { StatCard } from '@/components/shared/stat-card';
+    27→
+    28→// ---------------------------------------------------------------------------
+    29→// Types
+    30→// ---------------------------------------------------------------------------
+    31→interface DashboardData {
+    32→  agents: { total: number; active: number };
+    33→  tasks: { pending: number; running: number; completed: number; failed: number; total: number };
+    34→  alerts: { critical: number; high: number; medium: number; low: number; info: number; total: number };
+    35→  sensors: { total: number; online: number; offline: number; onlinePercent: number };
+    36→  wallGuard: { total: number; active: number; totalBlocks: number };
+    37→  recentActivity: Array<{
+    38→    id: string; action: string; resource: string; details: string;
+    39→    userId: string; createdAt: string;
+    40→    user: { name: string; email: string };
+    41→  }>;
+    42→  recentAlerts: Array<{
+    43→    id: string; severity: string; type: string; title: string;
+    44→    status: string; createdAt: string; source: string;
+    45→  }>;
+    46→  systemMetrics: {
+    47→    cpu: { usagePercent: number; cores: number; model: string; loadAvg: number[] };
+    48→    memory: { totalGb: number; usedGb: number; freeGb: number; usagePercent: number };
+    49→    network: { interfaces: number; hostname: string; platform: string };
+    50→    uptime: number;
+    51→    queryTimeMs: number;
+    52→  };
+    53→  agentLoadPerDomain: Array<{
+    54→    domain: string; name: string; status: string; taskCount: number;
+    55→  }>;
+    56→}
+    57→
+    58→const severityColors: Record<string, string> = {
+    59→  critical: 'bg-red-500/20 text-red-400 border-red-500/30',
+    60→  high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    61→  medium: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    62→  low: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    63→  info: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
+    64→};
+    65→
+    66→const actionBadgeColors: Record<string, string> = {
+    67→  login: 'bg-emerald-500/20 text-emerald-400',
+    68→  error: 'bg-red-500/20 text-red-400',
+    69→  agent_create: 'bg-sky-500/20 text-sky-400',
+    70→  agent_update: 'bg-sky-500/20 text-sky-400',
+    71→  task_create: 'bg-violet-500/20 text-violet-400',
+    72→  task_update: 'bg-violet-500/20 text-violet-400',
+    73→  task_cancel: 'bg-orange-500/20 text-orange-400',
+    74→  wall_block: 'bg-red-500/20 text-red-400',
+    75→  wall_test_all: 'bg-amber-500/20 text-amber-400',
+    76→  toggle_wall_guard: 'bg-amber-500/20 text-amber-400',
+    77→  council_decision: 'bg-emerald-500/20 text-emerald-400',
+    78→  escalate_alert: 'bg-red-500/20 text-red-400',
+    79→  update_alert: 'bg-amber-500/20 text-amber-400',
+    80→  agent_disable: 'bg-orange-500/20 text-orange-400',
+    81→};
+    82→
+    83→const defenseLayers = [
+    84→  { name: 'Network Defense', icon: Globe, color: 'text-emerald-400', active: 24, dormant: 8 },
+    85→  { name: 'Endpoint Security', icon: Lock, color: 'text-sky-400', active: 18, dormant: 6 },
+    86→  { name: 'Application Shield', icon: Shield, color: 'text-violet-400', active: 15, dormant: 5 },
+    87→  { name: 'Identity & Access', icon: Fingerprint, color: 'text-amber-400', active: 12, dormant: 3 },
+    88→  { name: 'Data Protection', icon: Eye, color: 'text-rose-400', active: 10, dormant: 4 },
+    89→  { name: 'Micro-Defenses', icon: Bug, color: 'text-teal-400', active: 22, dormant: 6 },
+    90→];
+    91→
+    92→const quickActions = [
+    93→  { label: 'Scan Network', icon: Scan, variant: 'default' as const, description: 'Discover all active hosts and services' },
+    94→  { label: 'Run Full Scan', icon: Play, variant: 'default' as const, description: 'Execute comprehensive system scan' },
+    95→  { label: 'Check Updates', icon: Download, variant: 'outline' as const, description: 'Verify tool and agent updates' },
+    96→  { label: 'Export Report', icon: FileWarning, variant: 'outline' as const, description: 'Generate PDF security report' },
+    97→  { label: 'Activate All Defenses', icon: ShieldCheck, variant: 'default' as const, description: 'Enable all dormant defense tools' },
+    98→  { label: 'Test Self-Attack Wall', icon: Sword, variant: 'destructive' as const, description: 'Validate wall guard detection' },
+    99→];
+   100→
+   101→const defenseStatusGrid = [
+   102→  { name: 'Firewall', icon: Shield, color: 'text-emerald-400', bgColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/20', activeTools: 24, status: 'active' as const, uptime: '99.8%' },
+   103→  { name: 'IDS/IPS', icon: Eye, color: 'text-sky-400', bgColor: 'bg-sky-500/10', borderColor: 'border-sky-500/20', activeTools: 18, status: 'active' as const, uptime: '99.5%' },
+   104→  { name: 'Application WAF', icon: Shield, color: 'text-violet-400', bgColor: 'bg-violet-500/10', borderColor: 'border-violet-500/20', activeTools: 15, status: 'active' as const, uptime: '98.2%' },
+   105→  { name: 'Endpoint Protection', icon: Lock, color: 'text-amber-400', bgColor: 'bg-amber-500/10', borderColor: 'border-amber-500/20', activeTools: 12, status: 'degraded' as const, uptime: '97.1%' },
+   106→  { name: 'Data Protection', icon: Eye, color: 'text-rose-400', bgColor: 'bg-rose-500/10', borderColor: 'border-rose-500/20', activeTools: 10, status: 'active' as const, uptime: '100%' },
+   107→  { name: 'Cloud Security', icon: Globe, color: 'text-cyan-400', bgColor: 'bg-cyan-500/10', borderColor: 'border-cyan-500/20', activeTools: 8, status: 'active' as const, uptime: '99.9%' },
+   108→  { name: 'Micro Defense', icon: Bug, color: 'text-teal-400', bgColor: 'bg-teal-500/10', borderColor: 'border-teal-500/20', activeTools: 22, status: 'active' as const, uptime: '99.3%' },
+   109→];
+   110→
+   111→const systemHealthChecks = [
+   112→  { name: 'API Server', icon: Server, status: 'healthy' as const, responseTime: '12ms', description: 'Next.js API routes responding normally' },
+   113→  { name: 'Database', icon: HardDrive, status: 'healthy' as const, responseTime: '3ms', description: 'SQLite read/write operations nominal' },
+   114→  { name: 'CPU Load', icon: ThermometerSun, status: 'warning' as const, responseTime: '78%', description: 'Elevated load — monitor closely' },
+   115→  { name: 'Memory', icon: Cpu, status: 'healthy' as const, responseTime: '62%', description: 'RAM usage within acceptable bounds' },
+   116→  { name: 'Heartbeat', icon: Heart, status: 'healthy' as const, responseTime: '1s', description: 'System heartbeat signal stable' },
+   117→];
+   118→
+   119→const vipStatusProfiles = [
+   120→  { name: 'Principal Alpha', designation: 'CEO', threatLevel: 'critical' as const, droneCount: 4, vehicleCount: 2, wearableCount: 3, protectionLevel: 5 },
+   121→  { name: 'Principal Bravo', designation: 'CFO', threatLevel: 'high' as const, droneCount: 2, vehicleCount: 1, wearableCount: 2, protectionLevel: 4 },
+   122→  { name: 'Principal Charlie', designation: 'CTO', threatLevel: 'medium' as const, droneCount: 2, vehicleCount: 1, wearableCount: 1, protectionLevel: 3 },
+   123→];
+   124→
+   125→const stagger = {
+   126→  hidden: {}, show: { transition: { staggerChildren: 0.06 } },
+   127→};
+   128→const fadeUp = {
+   129→  hidden: { opacity: 0, y: 18 },
+   130→  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } },
+   131→};
+   132→
+   133→// ---------------------------------------------------------------------------
+   134→// Component
+   135→// ---------------------------------------------------------------------------
+   136→export default function DashboardPage() {
+   137→  const { data, loading, error, refetch } = useApi<DashboardData>('/api/dashboard');
+   138→
+   139→  if (error) {
+   140→    return (
+   141→      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+   142→        <XCircle className="h-12 w-12 text-red-400" />
+   143→        <p className="text-red-400 text-sm">Failed to load dashboard: {error}</p>
+   144→        <Button variant="outline" size="sm" onClick={refetch} className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10">
+   145→          Retry
+   146→        </Button>
+   147→      </div>
+   148→    );
+   149→  }
+   150→
+   151→  if (loading || !data) {
+   152→    return (
+   153→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   154→        {Array.from({ length: 8 }).map((_, i) => (
+   155→          <Skeleton key={i} className="h-32 rounded-xl bg-white/5" />
+   156→        ))}
+   157→      </div>
+   158→    );
+   159→  }
+   160→
+   161→  const { agents, tasks, alerts, sensors, wallGuard, recentActivity, recentAlerts, systemMetrics, agentLoadPerDomain } = data;
+   162→  const openAlerts = alerts.total;
+   163→
+   164→  /* Build timeline items from audit log data */
+   165→  const timelineItems = recentActivity.map((log) => {
+   166→    let type: 'success' | 'warning' | 'error' | 'info' = 'info';
+   167→    if (log.action.includes('error') || log.action.includes('fail')) type = 'error';
+   168→    else if (log.action.includes('create') || log.action.includes('login') || log.action.includes('decision')) type = 'success';
+   169→    else if (log.action.includes('escalate') || log.action.includes('cancel') || log.action.includes('disable')) type = 'warning';
+   170→    let detailStr = '';
+   171→    try { detailStr = JSON.stringify(JSON.parse(log.details)).slice(0, 120); } catch { detailStr = log.details?.slice(0, 120) || ''; }
+   172→    return {
+   173→      id: log.id,
+   174→      timestamp: log.createdAt,
+   175→      title: `${log.user?.name || 'System'} — ${log.action.replace(/_/g, ' ')}`,
+   176→      description: detailStr || log.resource,
+   177→      type,
+   178→      badge: log.action.replace(/_/g, ' '),
+   179→    };
+   180→  });
+   181→
+   182→  /* Compute threat level from alert severity distribution */
+   183→  const threatScore = alerts.total > 0
+   184→    ? Math.min(100, Math.round((alerts.critical * 25 + alerts.high * 15 + alerts.medium * 5 + alerts.low * 1) / Math.max(1, alerts.total) * 10))
+   185→    : 0;
+   186→  const blockedThreats = wallGuard.totalBlocks;
+   187→
+   188→  const chartData = agentLoadPerDomain.map((a) => ({
+   189→    name: a.name.length > 12 ? a.name.slice(0, 12) + '…' : a.name,
+   190→    domain: a.domain,
+   191→    tasks: a.taskCount,
+   192→    status: a.status,
+   193→  }));
+   194→
+   195→  const barColors = ['hsl(160,70%,45%)', 'hsl(45,90%,50%)', 'hsl(200,70%,50%)', 'hsl(280,60%,55%)', 'hsl(340,60%,55%)', 'hsl(180,60%,45%)'];
+   196→
+   197→  const taskTypeData = [
+   198→    { name: 'Completed', value: tasks.completed, fill: 'hsl(160,70%,45%)' },
+   199→    { name: 'Pending', value: tasks.pending + tasks.running, fill: 'hsl(200,70%,50%)' },
+   200→    { name: 'Failed', value: tasks.failed, fill: 'hsl(340,60%,55%)' },
+   201→  ];
+   202→
+   203→  const maxTaskValue = Math.max(...taskTypeData.map(d => d.value), 1);
+   204→
+   205→  return (
+   206→    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
+   207→      {/* Header */}
+   208→      <motion.div variants={fadeUp}>
+   209→        <h1 className="text-2xl font-bold text-white">Command Dashboard</h1>
+   210→        <p className="text-sm text-slate-400 mt-1">BABIRYE v10.0.0 — Real-time operational overview</p>
+   211→      </motion.div>
+   212→
+   213→      {/* ── Stat Cards ──────────────────────────────────────────── */}
+   214→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   215→        {[
+   216→          { label: 'Active Agents', value: agents.active, sub: `of ${agents.total} total`, icon: Bot, color: 'text-emerald-400', trend: '+2', up: true },
+   217→          { label: 'Threats Blocked', value: blockedThreats, sub: 'by Self-Attack Wall', icon: ShieldAlert, color: 'text-red-400', trend: '+18', up: true },
+   218→          { label: 'Open Alerts', value: openAlerts, sub: `${alerts.critical} critical`, icon: Bell, color: 'text-amber-400', trend: '-3', up: false },
+   219→          { label: 'Sensors Online', value: sensors.online, sub: `${sensors.onlinePercent}% uptime`, icon: Radio, color: 'text-sky-400', trend: '+1', up: true },
+   220→        ].map((stat) => (
+   221→          <motion.div key={stat.label} variants={fadeUp}>
+   222→            <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm hover:border-emerald-500/30 transition-colors">
+   223→              <CardContent className="p-5">
+   224→                <div className="flex items-start justify-between">
+   225→                  <div>
+   226→                    <p className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</p>
+   227→                    <p className="text-3xl font-bold text-white mt-1">{stat.value.toLocaleString()}</p>
+   228→                    <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>
+   229→                  </div>
+   230→                  <div className="flex flex-col items-end gap-1">
+   231→                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+   232→                    <span className={`text-xs flex items-center gap-0.5 ${stat.up ? 'text-emerald-400' : 'text-red-400'}`}>
+   233→                      {stat.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+   234→                      {stat.trend}
+   235→                    </span>
+   236→                  </div>
+   237→                </div>
+   238→              </CardContent>
+   239→            </Card>
+   240→          </motion.div>
+   241→        ))}
+   242→      </div>
+   243→
+   244→      {/* ── Shared Stat Cards ─────────────────────────────────────── */}
+   245→      <motion.div variants={fadeUp} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+   246→        <StatCard icon={Bot} title="Agents Total" value={agents.total} variant="emerald" change={2} changeLabel="this week" />
+   247→        <StatCard icon={Activity} title="Agents Active" value={agents.active} variant="sky" change={2} changeLabel="this week" />
+   248→        <StatCard icon={ShieldAlert} title="Wall Blocks" value={blockedThreats.toLocaleString()} variant="red" change={18} changeLabel="24h" />
+   249→        <StatCard icon={Radio} title="Sensors Online" value={`${sensors.online}/${sensors.total}`} variant="emerald" change={1} changeLabel="today" />
+   250→        <StatCard icon={CheckCircle2} title="Tasks Done" value={tasks.completed} variant="sky" change={5} changeLabel="this week" />
+   251→        <StatCard icon={Bell} title="Alerts Open" value={openAlerts} variant={alerts.critical > 0 ? 'red' : 'amber'} change={-3} changeLabel="24h" />
+   252→      </motion.div>
+   253→
+   254→      {/* ── Shared Activity Timeline ────────────────────────────────── */}
+   255→      <motion.div variants={fadeUp}>
+   256→        <Card className="bg-slate-900/80 border-slate-700/50">
+   257→          <CardHeader className="pb-3">
+   258→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   259→              <Clock className="h-4 w-4 text-emerald-400" /> Activity Timeline
+   260→            </CardTitle>
+   261→            <CardDescription className="text-slate-500 text-xs">Recent system audit log entries</CardDescription>
+   262→          </CardHeader>
+   263→          <CardContent className="p-0">
+   264→            <ActivityTimeline items={timelineItems} maxHeight="max-h-[280px]" />
+   265→          </CardContent>
+   266→        </Card>
+   267→      </motion.div>
+   268→
+   269→      {/* ── Middle Row: Activity Feed + System Metrics ──────────── */}
+   270→      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+   271→        {/* Activity Feed */}
+   272→        <motion.div variants={fadeUp} className="lg:col-span-2">
+   273→          <Card className="bg-slate-900/80 border-slate-700/50 h-full">
+   274→            <CardHeader className="pb-3">
+   275→              <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   276→                <Activity className="h-4 w-4 text-emerald-400" /> Activity Feed
+   277→              </CardTitle>
+   278→            </CardHeader>
+   279→            <CardContent className="p-0">
+   280→              <ScrollArea className="h-[320px]">
+   281→                <div className="px-4 pb-4 space-y-2">
+   282→                  {recentActivity.length === 0 && (
+   283→                    <p className="text-xs text-slate-500 py-8 text-center">No recent activity</p>
+   284→                  )}
+   285→                  {recentActivity.map((log) => (
+   286→                    <div key={log.id} className="flex items-center gap-3 py-2 border-b border-slate-800/50 last:border-0">
+   287→                      <div className="min-w-0 flex-1">
+   288→                        <div className="flex items-center gap-2 flex-wrap">
+   289→                          <span className="text-xs text-white font-medium">{log.user?.name || 'System'}</span>
+   290→                          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${actionBadgeColors[log.action] || 'bg-slate-700/50 text-slate-300'}`}>
+   291→                            {log.action.replace(/_/g, ' ')}
+   292→                          </Badge>
+   293→                          <span className="text-[10px] text-slate-500">{log.resource}</span>
+   294→                        </div>
+   295→                        <p className="text-[11px] text-slate-500 mt-0.5 truncate">{log.details ? JSON.parse(log.details).toString().slice(0, 100) : ''}</p>
+   296→                      </div>
+   297→                      <span className="text-[10px] text-slate-600 whitespace-nowrap">
+   298→                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+   299→                      </span>
+   300→                    </div>
+   301→                  ))}
+   302→                </div>
+   303→              </ScrollArea>
+   304→            </CardContent>
+   305→          </Card>
+   306→        </motion.div>
+   307→
+   308→        {/* System Metrics */}
+   309→        <motion.div variants={fadeUp}>
+   310→          <Card className="bg-slate-900/80 border-slate-700/50 h-full">
+   311→            <CardHeader className="pb-3">
+   312→              <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   313→                <Cpu className="h-4 w-4 text-emerald-400" /> System Metrics
+   314→              </CardTitle>
+   315→            </CardHeader>
+   316→            <CardContent className="space-y-5">
+   317→              <div>
+   318→                <div className="flex justify-between items-center mb-1.5">
+   319→                  <span className="text-xs text-slate-400 flex items-center gap-1.5"><Cpu className="h-3.5 w-3.5 text-sky-400" /> CPU</span>
+   320→                  <span className="text-xs font-mono text-white">{systemMetrics.cpu.usagePercent}%</span>
+   321→                </div>
+   322→                <Progress value={systemMetrics.cpu.usagePercent} className="h-2 bg-slate-800 [&>div]:bg-sky-400" />
+   323→                <p className="text-[10px] text-slate-600 mt-1">{systemMetrics.cpu.cores} cores • Load: {systemMetrics.cpu.loadAvg[0]}</p>
+   324→              </div>
+   325→              <div>
+   326→                <div className="flex justify-between items-center mb-1.5">
+   327→                  <span className="text-xs text-slate-400 flex items-center gap-1.5"><MemoryStick className="h-3.5 w-3.5 text-emerald-400" /> Memory</span>
+   328→                  <span className="text-xs font-mono text-white">{systemMetrics.memory.usagePercent}%</span>
+   329→                </div>
+   330→                <Progress value={systemMetrics.memory.usagePercent} className="h-2 bg-slate-800 [&>div]:bg-emerald-400" />
+   331→                <p className="text-[10px] text-slate-600 mt-1">{systemMetrics.memory.usedGb} / {systemMetrics.memory.totalGb} GB</p>
+   332→              </div>
+   333→              <div>
+   334→                <div className="flex justify-between items-center mb-1.5">
+   335→                  <span className="text-xs text-slate-400 flex items-center gap-1.5"><Network className="h-3.5 w-3.5 text-violet-400" /> Network</span>
+   336→                  <span className="text-xs font-mono text-white">{systemMetrics.network.interfaces} ifaces</span>
+   337→                </div>
+   338→                <Progress value={Math.min(100, systemMetrics.network.interfaces * 12)} className="h-2 bg-slate-800 [&>div]:bg-violet-400" />
+   339→                <p className="text-[10px] text-slate-600 mt-1">{systemMetrics.network.platform}</p>
+   340→              </div>
+   341→              <Separator className="bg-slate-800" />
+   342→              <div className="flex items-center justify-between text-xs">
+   343→                <span className="text-slate-500">Uptime</span>
+   344→                <span className="text-slate-300 font-mono">{Math.floor(systemMetrics.uptime / 3600)}h {Math.floor((systemMetrics.uptime % 3600) / 60)}m</span>
+   345→              </div>
+   346→              <div className="flex items-center justify-between text-xs">
+   347→                <span className="text-slate-500">Query time</span>
+   348→                <span className="text-emerald-400 font-mono">{systemMetrics.queryTimeMs}ms</span>
+   349→              </div>
+   350→            </CardContent>
+   351→          </Card>
+   352→        </motion.div>
+   353→      </div>
+   354→
+   355→      {/* ── Charts Row: Agent Metrics + Threat Gauge + Sensor Coverage ── */}
+   356→      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+   357→        <motion.div variants={fadeUp}>
+   358→          <AgentMetricsChart />
+   359→        </motion.div>
+   360→        <motion.div variants={fadeUp}>
+   361→          <ThreatLevelGauge value={threatScore} label="System Health Threat Level" size={220} />
+   362→        </motion.div>
+   363→        <motion.div variants={fadeUp}>
+   364→          <SensorCoverageChart />
+   365→        </motion.div>
+   366→      </div>
+   367→
+   368→      {/* ── Alert Timeline Chart ─────────────────────────────────────── */}
+   369→      <motion.div variants={fadeUp}>
+   370→        <AlertTimelineChart />
+   371→      </motion.div>
+   372→
+   373→      {/* ── Quick Actions ──────────────────────────────────────────── */}
+   374→      <motion.div variants={fadeUp}>
+   375→        <Card className="bg-slate-900/80 border-slate-700/50">
+   376→          <CardHeader className="pb-3">
+   377→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   378→              <Zap className="h-4 w-4 text-emerald-400" /> Quick Actions
+   379→            </CardTitle>
+   380→            <CardDescription className="text-slate-500 text-xs">Rapid operational commands</CardDescription>
+   381→          </CardHeader>
+   382→          <CardContent>
+   383→            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+   384→              {quickActions.map((action) => (
+   385→                <Button
+   386→                  key={action.label}
+   387→                  variant={action.variant}
+   388→                  className="h-auto flex-col gap-2 py-4 px-3 bg-slate-800/50 border border-slate-700/40 hover:border-emerald-500/30 hover:bg-slate-800/80 text-slate-300 hover:text-white transition-all"
+   389→                  onClick={() => refetch()}
+   390→                >
+   391→                  <action.icon className="h-5 w-5 text-emerald-400" />
+   392→                  <span className="text-[11px] font-medium text-center leading-tight">{action.label}</span>
+   393→                </Button>
+   394→              ))}
+   395→            </div>
+   396→          </CardContent>
+   397→        </Card>
+   398→      </motion.div>
+   399→
+   400→      {/* ── Defense Status Grid ────────────────────────────────────── */}
+   401→      <motion.div variants={fadeUp}>
+   402→        <Card className="bg-slate-900/80 border-slate-700/50">
+   403→          <CardHeader className="pb-3">
+   404→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   405→              <ShieldCheck className="h-4 w-4 text-emerald-400" /> Defense Status Grid
+   406→            </CardTitle>
+   407→            <CardDescription className="text-slate-500 text-xs">Active defense layers and their current operational status</CardDescription>
+   408→          </CardHeader>
+   409→          <CardContent>
+   410→            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+   411→              {defenseStatusGrid.map((ds) => (
+   412→                <div key={ds.name} className={`rounded-lg border p-3 text-center ${ds.bgColor} ${ds.borderColor} transition-colors hover:scale-[1.02]`}>
+   413→                  <ds.icon className={`h-5 w-5 mx-auto mb-2 ${ds.color}`} />
+   414→                  <p className="text-[11px] font-medium text-white mb-1">{ds.name}</p>
+   415→                  <p className="text-lg font-bold text-white">{ds.activeTools}</p>
+   416→                  <p className="text-[10px] text-slate-400">active tools</p>
+   417→                  <div className="mt-2 flex items-center justify-center gap-1">
+   418→                    <div className={`h-1.5 w-1.5 rounded-full ${ds.status === 'active' ? 'bg-emerald-400' : ds.status === 'degraded' ? 'bg-amber-400' : 'bg-red-400'}`} />
+   419→                    <span className={`text-[10px] font-medium ${ds.status === 'active' ? 'text-emerald-400' : ds.status === 'degraded' ? 'text-amber-400' : 'text-red-400'}`}>{ds.status}</span>
+   420→                  </div>
+   421→                  <p className="text-[10px] text-slate-500 mt-1">Uptime: {ds.uptime}</p>
+   422→                </div>
+   423→              ))}
+   424→            </div>
+   425→          </CardContent>
+   426→        </Card>
+   427→      </motion.div>
+   428→
+   429→      {/* ── Recent System Events Timeline (20 items) ────────────── */}
+   430→      <motion.div variants={fadeUp}>
+   431→        <Card className="bg-slate-900/80 border-slate-700/50">
+   432→          <CardHeader className="pb-3">
+   433→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   434→              <Clock className="h-4 w-4 text-emerald-400" /> Recent System Events
+   435→            </CardTitle>
+   436→            <CardDescription className="text-slate-500 text-xs">Last 20 system events from audit logs</CardDescription>
+   437→          </CardHeader>
+   438→          <CardContent className="p-0">
+   439→            <ActivityTimeline items={timelineItems.slice(0, 20)} maxHeight="max-h-[480px]" />
+   440→          </CardContent>
+   441→        </Card>
+   442→      </motion.div>
+   443→
+   444→      {/* ── VIP Status Overview ────────────────────────────────────── */}
+   445→      <motion.div variants={fadeUp}>
+   446→        <Card className="bg-slate-900/80 border-slate-700/50">
+   447→          <CardHeader className="pb-3">
+   448→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   449→              <Crown className="h-4 w-4 text-amber-400" /> VIP Status Overview
+   450→            </CardTitle>
+   451→            <CardDescription className="text-slate-500 text-xs">Active protectees and their resource allocation</CardDescription>
+   452→          </CardHeader>
+   453→          <CardContent>
+   454→            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   455→              {vipStatusProfiles.map((vip) => {
+   456→                const threatBadgeClass = vip.threatLevel === 'critical'
+   457→                  ? 'bg-red-500/20 text-red-400 border-red-500/30'
+   458→                  : vip.threatLevel === 'high'
+   459→                  ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+   460→                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+   461→                return (
+   462→                  <div key={vip.name} className="rounded-lg border border-slate-700/40 bg-slate-800/30 p-4 space-y-3">
+   463→                    <div className="flex items-center justify-between">
+   464→                      <div className="flex items-center gap-2">
+   465→                        <Crown className="h-4 w-4 text-amber-400" />
+   466→                        <div>
+   467→                          <p className="text-xs font-medium text-white">{vip.name}</p>
+   468→                          <p className="text-[10px] text-slate-500">{vip.designation}</p>
+   469→                        </div>
+   470→                      </div>
+   471→                      <Badge variant="outline" className={`text-[10px] capitalize border ${threatBadgeClass}`}>
+   472→                        {vip.threatLevel}
+   473→                      </Badge>
+   474→                    </div>
+   475→                    <div className="grid grid-cols-3 gap-2">
+   476→                      <div className="text-center p-2 rounded bg-slate-900/50">
+   477→                        <Plane className="h-3.5 w-3.5 mx-auto text-sky-400 mb-1" />
+   478→                        <p className="text-sm font-bold text-white">{vip.droneCount}</p>
+   479→                        <p className="text-[9px] text-slate-500">Drones</p>
+   480→                      </div>
+   481→                      <div className="text-center p-2 rounded bg-slate-900/50">
+   482→                        <Truck className="h-3.5 w-3.5 mx-auto text-emerald-400 mb-1" />
+   483→                        <p className="text-sm font-bold text-white">{vip.vehicleCount}</p>
+   484→                        <p className="text-[9px] text-slate-500">Vehicles</p>
+   485→                      </div>
+   486→                      <div className="text-center p-2 rounded bg-slate-900/50">
+   487→                        <Watch className="h-3.5 w-3.5 mx-auto text-violet-400 mb-1" />
+   488→                        <p className="text-sm font-bold text-white">{vip.wearableCount}</p>
+   489→                        <p className="text-[9px] text-slate-500">Wearables</p>
+   490→                      </div>
+   491→                    </div>
+   492→                    <div className="flex items-center justify-between text-[10px]">
+   493→                      <span className="text-slate-500">Protection Level</span>
+   494→                      <div className="flex items-center gap-1">
+   495→                        {Array.from({ length: 5 }).map((_, i) => (
+   496→                          <div key={i} className={`h-1.5 w-4 rounded-full ${i < vip.protectionLevel ? 'bg-emerald-400' : 'bg-slate-700'}`} />
+   497→                        ))}
+   498→                      </div>
+   499→                    </div>
+   500→                  </div>
+   501→                );
+   502→              })}
+   503→            </div>
+   504→          </CardContent>
+   505→        </Card>
+   506→      </motion.div>
+   507→
+   508→      {/* ── Bottom Row: Alerts + Agent Load + Defense Layers ──── */}
+   509→      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+   510→        {/* Recent Alerts */}
+   511→        <motion.div variants={fadeUp}>
+   512→          <Card className="bg-slate-900/80 border-slate-700/50 h-full">
+   513→            <CardHeader className="pb-3">
+   514→              <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   515→                <AlertTriangle className="h-4 w-4 text-amber-400" /> Recent Alerts
+   516→              </CardTitle>
+   517→            </CardHeader>
+   518→            <CardContent className="space-y-2.5">
+   519→              {recentAlerts.length === 0 && <p className="text-xs text-slate-500 text-center py-6">No alerts</p>}
+   520→              {recentAlerts.map((alert) => (
+   521→                <div key={alert.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/30">
+   522→                  <div className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${
+   523→                    alert.severity === 'critical' ? 'bg-red-500' :
+   524→                    alert.severity === 'high' ? 'bg-orange-500' :
+   525→                    alert.severity === 'medium' ? 'bg-amber-500' : 'bg-sky-400'
+   526→                  }`} />
+   527→                  <div className="min-w-0 flex-1">
+   528→                    <p className="text-xs text-white font-medium truncate">{alert.title}</p>
+   529→                    <div className="flex items-center gap-1.5 mt-1">
+   530→                      <Badge variant="outline" className={`text-[9px] px-1 py-0 ${severityColors[alert.severity] || ''}`}>
+   531→                        {alert.severity}
+   532→                      </Badge>
+   533→                      <span className="text-[10px] text-slate-500">{alert.source}</span>
+   534→                    </div>
+   535→                  </div>
+   536→                  <span className="text-[10px] text-slate-600 whitespace-nowrap">
+   537→                    {new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+   538→                  </span>
+   539→                </div>
+   540→              ))}
+   541→            </CardContent>
+   542→          </Card>
+   543→        </motion.div>
+   544→
+   545→        {/* Agent Load Chart */}
+   546→        <motion.div variants={fadeUp}>
+   547→          <Card className="bg-slate-900/80 border-slate-700/50 h-full">
+   548→            <CardHeader className="pb-3">
+   549→              <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   550→                <Zap className="h-4 w-4 text-emerald-400" /> Agent Load
+   551→              </CardTitle>
+   552→              <CardDescription className="text-slate-500 text-xs">Tasks per agent domain</CardDescription>
+   553→            </CardHeader>
+   554→            <CardContent>
+   555→              <div className="h-[220px]">
+   556→                <ResponsiveContainer width="100%" height="100%">
+   557→                  <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+   558→                    <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 9 }} axisLine={{ stroke: '#1e293b' }} />
+   559→                    <YAxis tick={{ fill: '#64748b', fontSize: 9 }} axisLine={{ stroke: '#1e293b' }} />
+   560→                    <Tooltip
+   561→                      contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 11 }}
+   562→                      labelStyle={{ color: '#94a3b8' }}
+   563→                      itemStyle={{ color: '#34d399' }}
+   564→                    />
+   565→                    <Bar dataKey="tasks" radius={[4, 4, 0, 0]}>
+   566→                      {chartData.map((_, idx) => (
+   567→                        <Cell key={idx} fill={barColors[idx % barColors.length]} />
+   568→                      ))}
+   569→                    </Bar>
+   570→                  </BarChart>
+   571→                </ResponsiveContainer>
+   572→              </div>
+   573→            </CardContent>
+   574→          </Card>
+   575→        </motion.div>
+   576→
+   577→        {/* Defense Layers */}
+   578→        <motion.div variants={fadeUp}>
+   579→          <Card className="bg-slate-900/80 border-slate-700/50 h-full">
+   580→            <CardHeader className="pb-3">
+   581→              <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   582→                <Layers className="h-4 w-4 text-emerald-400" /> Defense Layers
+   583→              </CardTitle>
+   584→            </CardHeader>
+   585→            <CardContent className="space-y-3">
+   586→              {defenseLayers.map((layer) => (
+   587→                <div key={layer.name} className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 hover:bg-slate-800/60 transition-colors">
+   588→                  <layer.icon className={`h-4 w-4 ${layer.color} shrink-0`} />
+   589→                  <div className="flex-1 min-w-0">
+   590→                    <p className="text-xs text-white font-medium">{layer.name}</p>
+   591→                    <p className="text-[10px] text-slate-500">{layer.active} active • {layer.dormant} dormant</p>
+   592→                  </div>
+   593→                  <div className="w-16">
+   594→                    <Progress value={(layer.active / (layer.active + layer.dormant)) * 100} className="h-1.5 bg-slate-800 [&>div]:bg-emerald-400" />
+   595→                  </div>
+   596→                </div>
+   597→              ))}
+   598→            </CardContent>
+   599→          </Card>
+   600→        </motion.div>
+   601→      </div>
+   602→
+   603→      {/* ── Total Tasks by Type (Horizontal Bar Chart) ────────── */}
+   604→      <motion.div variants={fadeUp}>
+   605→        <Card className="bg-slate-900/80 border-slate-700/50">
+   606→          <CardHeader className="pb-3">
+   607→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   608→              <Target className="h-4 w-4 text-emerald-400" /> Total Tasks by Type
+   609→            </CardTitle>
+   610→            <CardDescription className="text-slate-500 text-xs">Completed, pending, and failed task distribution</CardDescription>
+   611→          </CardHeader>
+   612→          <CardContent>
+   613→            <div className="space-y-4">
+   614→              {taskTypeData.map((row) => (
+   615→                <div key={row.name} className="space-y-1.5">
+   616→                  <div className="flex items-center justify-between">
+   617→                    <div className="flex items-center gap-2">
+   618→                      <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: row.fill }} />
+   619→                      <span className="text-xs text-slate-300 font-medium">{row.name}</span>
+   620→                    </div>
+   621→                    <span className="text-xs font-mono text-white font-bold">{row.value.toLocaleString()}</span>
+   622→                  </div>
+   623→                  <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
+   624→                    <motion.div
+   625→                      initial={{ width: 0 }}
+   626→                      animate={{ width: `${(row.value / maxTaskValue) * 100}%` }}
+   627→                      transition={{ duration: 0.8, ease: 'easeOut' as const }}
+   628→                      className="h-full rounded-full"
+   629→                      style={{ backgroundColor: row.fill }}
+   630→                    />
+   631→                  </div>
+   632→                </div>
+   633→              ))}
+   634→              <div className="flex items-center gap-4 pt-2 border-t border-slate-800">
+   635→                <span className="text-[10px] text-slate-500">Total: {tasks.total.toLocaleString()} tasks</span>
+   636→                <span className="text-[10px] text-emerald-400">Success Rate: {tasks.total > 0 ? Math.round((tasks.completed / tasks.total) * 100) : 0}%</span>
+   637→              </div>
+   638→            </div>
+   639→          </CardContent>
+   640→        </Card>
+   641→      </motion.div>
+   642→
+   643→      {/* ── System Health Panel ──────────────────────────────────── */}
+   644→      <motion.div variants={fadeUp}>
+   645→        <Card className="bg-slate-900/80 border-slate-700/50">
+   646→          <CardHeader className="pb-3">
+   647→            <CardTitle className="text-white text-sm font-semibold flex items-center gap-2">
+   648→              <Activity className="h-4 w-4 text-emerald-400" /> System Health
+   649→            </CardTitle>
+   650→            <CardDescription className="text-slate-500 text-xs">Real-time health check for critical subsystems</CardDescription>
+   651→          </CardHeader>
+   652→          <CardContent className="space-y-3">
+   653→            {systemHealthChecks.map((check) => (
+   654→              <div key={check.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800/30 hover:bg-slate-800/60 transition-colors">
+   655→                <div className={`flex items-center justify-center rounded-lg p-2 ${check.status === 'healthy' ? 'bg-emerald-500/10' : check.status === 'warning' ? 'bg-amber-500/10' : 'bg-red-500/10'}`}>
+   656→                  <check.icon className={`h-4 w-4 ${check.status === 'healthy' ? 'text-emerald-400' : check.status === 'warning' ? 'text-amber-400' : 'text-red-400'}`} />
+   657→                </div>
+   658→                <div className="flex-1 min-w-0">
+   659→                  <div className="flex items-center justify-between">
+   660→                    <p className="text-xs font-medium text-white">{check.name}</p>
+   661→                    <div className="flex items-center gap-1.5">
+   662→                      <span className="text-[10px] font-mono text-slate-400">{check.responseTime}</span>
+   663→                      <Badge
+   664→                        variant="outline"
+   665→                        className={`text-[9px] px-1.5 py-0 border ${
+   666→                          check.status === 'healthy'
+   667→                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+   668→                            : check.status === 'warning'
+   669→                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+   670→                            : 'bg-red-500/10 text-red-400 border-red-500/30'
+   671→                        }`}
+   672→                      >
+   673→                        {check.status}
+   674→                      </Badge>
+   675→                    </div>
+   676→                  </div>
+   677→                  <p className="text-[10px] text-slate-500 mt-0.5 truncate">{check.description}</p>
+   678→                </div>
+   679→              </div>
+   680→            ))}
+   681→          </CardContent>
+   682→        </Card>
+   683→      </motion.div>
+   684→    </motion.div>
+   685→  );
+   686→}

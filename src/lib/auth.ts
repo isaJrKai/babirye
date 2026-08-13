@@ -342,4 +342,4 @@ export async function authenticateRequest(authHeader: string | null): Promise<{ 
   if (apiResult.valid && apiResult.payload) return { authenticated: true, payload: apiResult.payload };
 
   return { authenticated: false, payload: null, error: apiResult.error || 'Invalid or expired token' };
-  */
+  */}
