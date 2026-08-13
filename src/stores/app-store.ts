@@ -64,7 +64,13 @@ export const useAppStore = create<AppState>((set) => ({
   sidebarCollapsed: false,
   theme: "dark",
   notifications: [],
-  user: null,
+  user: {
+    id: 'dev-admin',
+    name: 'Commander Nyx',
+    email: 'admin@babirye.local',
+    role: 'admin',
+    clearanceLevel: 5,
+  } as User,
 
   setPage: (page) => set({ currentPage: page }),
   toggleSidebar: () =>
