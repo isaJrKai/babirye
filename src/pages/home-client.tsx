@@ -4,26 +4,26 @@ import { lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAppStore } from "@/stores/app-store";
 
-const DashboardPage = lazy(() => import("@/pages/dashboard-page").then(m => ({ default: m.default })));
-const AgentsPage = lazy(() => import("@/pages/agents-page").then(m => ({ default: m.default })));
-const TasksPage = lazy(() => import("@/pages/tasks-page").then(m => ({ default: m.default })));
-const WallPage = lazy(() => import("@/pages/wall-page").then(m => ({ default: m.default })));
-const CouncilPage = lazy(() => import("@/pages/council-page").then(m => ({ default: m.default })));
-const ForensicPage = lazy(() => import("@/pages/forensic-page").then(m => ({ default: m.default })));
-const OffensivePage = lazy(() => import("@/pages/offensive-page").then(m => ({ default: m.default })));
-const DefensivePage = lazy(() => import("@/pages/defensive-page").then(m => ({ default: m.default })));
-const MicroDefensivePage = lazy(() => import("@/pages/micro-defensive-page").then(m => ({ default: m.default })));
-const SensorsPage = lazy(() => import("@/pages/sensors-page").then(m => ({ default: m.default })));
-const VipPage = lazy(() => import("@/pages/vip-page").then(m => ({ default: m.default })));
-const PotentialsPage = lazy(() => import("@/pages/potentials-page").then(m => ({ default: m.default })));
-const AlertsPage = lazy(() => import("@/pages/alerts-page").then(m => ({ default: m.default })));
-const AuditPage = lazy(() => import("@/pages/audit-page").then(m => ({ default: m.default })));
-const ReportsPage = lazy(() => import("@/pages/reports-page").then(m => ({ default: m.default })));
-const IntelPage = lazy(() => import("@/pages/intel-page").then(m => ({ default: m.default })));
-const WeaponsPage = lazy(() => import("@/pages/weapons-page").then(m => ({ default: m.default })));
-const GatewaysPage = lazy(() => import("@/pages/gateways-page").then(m => ({ default: m.default })));
-const ConstitutionsPage = lazy(() => import("@/pages/constitutions-page").then(m => ({ default: m.default })));
-const SettingsPage = lazy(() => import("@/pages/settings-page").then(m => ({ default: m.default })));
+const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
+const AgentsPage = lazy(() => import("@/pages/agents-page"));
+const TasksPage = lazy(() => import("@/pages/tasks-page"));
+const WallPage = lazy(() => import("@/pages/wall-page"));
+const CouncilPage = lazy(() => import("@/pages/council-page"));
+const ForensicPage = lazy(() => import("@/pages/forensic-page"));
+const OffensivePage = lazy(() => import("@/pages/offensive-page"));
+const DefensivePage = lazy(() => import("@/pages/defensive-page"));
+const MicroDefensivePage = lazy(() => import("@/pages/micro-defensive-page"));
+const SensorsPage = lazy(() => import("@/pages/sensors-page"));
+const VipPage = lazy(() => import("@/pages/vip-page"));
+const PotentialsPage = lazy(() => import("@/pages/potentials-page"));
+const AlertsPage = lazy(() => import("@/pages/alerts-page"));
+const AuditPage = lazy(() => import("@/pages/audit-page"));
+const ReportsPage = lazy(() => import("@/pages/reports-page"));
+const IntelPage = lazy(() => import("@/pages/intel-page"));
+const WeaponsPage = lazy(() => import("@/pages/weapons-page"));
+const GatewaysPage = lazy(() => import("@/pages/gateways-page"));
+const ConstitutionsPage = lazy(() => import("@/pages/constitutions-page"));
+const SettingsPage = lazy(() => import("@/pages/settings-page"));
 
 const PAGE_MAP: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   dashboard: DashboardPage,
