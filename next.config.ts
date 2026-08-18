@@ -12,7 +12,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // output: "standalone" removed — use custom serve.js
   typescript: { ignoreBuildErrors: false },
   reactStrictMode: false,
   allowedDevOrigins: ["preview-chat-3bbd5192-4e19-41cf-a6c0-aad62211ca56.space-z.ai"],
